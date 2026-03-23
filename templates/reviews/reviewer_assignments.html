@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Reviewer Articles</title>
+</head>
+<body>
+    <h1>My Assigned Articles</h1>
+
+    <p>
+        <a href="{% url 'my_notifications' %}">Notifications</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    {% if assignments %}
+        <ul>
+            {% for assignment in assignments %}
+                <li>
+                    <strong>
+                        <a href="{% url 'reviewer_article_detail' assignment.id %}">
+                            {{ assignment.article.title }}
+                        </a>
+                    </strong><br>
+
+                    Book: {{ assignment.article.book }}<br>
+                    Author: {{ assignment.article.author }}<br>
+                    Article status: {{ assignment.article.get_status_display }}<br>
+                    Assignment status: {{ assignment.get_status_display }}<br>
+
+                    {% if assignment.article.versions.all %}
+                        Latest version:
+                        {{ assignment.article.versions.first.version_number }}
+                        ({{ assignment.article.versions.first.uploaded_at }})<br>
+                    {% endif %}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No assignments yet.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Article</title>
+</head>
+<body>
+    <h1>Edit Article</h1>
+
+    <p>
+        <a href="{% url 'article_detail' article.id %}">Back to article</a>
+    </p>
+
+    <p><strong>Book:</strong> {{ article.book }}</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save changes</button>
+    </form>
+</body>
+</html>

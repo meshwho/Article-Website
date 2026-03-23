@@ -1,0 +1,205 @@
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+
+from users.decorators import role_required
+from .forms import BookAuthorsForm, BookForm
+from .models import Book
+from articles.models import Article
+
+from django.contrib import messages
+from reviews.forms import ReviewAssignmentForm
+from reviews.models import ReviewAssignment
+
+from django.urls import reverse
+from notifications.models import Notification
+
+@login_required
+@role_required(['admin'])
+def admin_books(request):
+    books = Book.objects.select_related('created_by').prefetch_related('allowed_authors').order_by('-created_at')
+
+    return render(
+        request,
+        'books/admin_books.html',
+        {'books': books}
+    )
+
+
+@login_required
+@role_required(['admin'])
+def create_book(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST)
+        if form.is_valid():
+            book = form.save(commit=False)
+            book.created_by = request.user
+            book.save()
+            return redirect('book_detail', book_id=book.id)
+    else:
+        form = BookForm()
+
+    return render(
+        request,
+        'books/create_book.html',
+        {'form': form}
+    )
+
+
+@login_required
+@role_required(['admin'])
+def book_detail(request, book_id):
+    book = get_object_or_404(
+        Book.objects.prefetch_related('allowed_authors'),
+        id=book_id
+    )
+
+    articles = book.articles.select_related('author').prefetch_related('review_assignments').all().order_by('-created_at')
+
+    selected_status = request.GET.get('status', '')
+    selected_author = request.GET.get('author', '')
+    selected_reviewer_filter = request.GET.get('reviewer_filter', '')
+
+    if selected_status:
+        articles = articles.filter(status=selected_status)
+
+    if selected_author:
+        articles = articles.filter(author_id=selected_author)
+
+    if selected_reviewer_filter == 'with_reviewer':
+        articles = articles.filter(review_assignments__isnull=False).distinct()
+    elif selected_reviewer_filter == 'without_reviewer':
+        articles = articles.filter(review_assignments__isnull=True)
+
+    authors = book.articles.select_related('author').values_list(
+        'author__id',
+        'author__first_name',
+        'author__last_name',
+        'author__username'
+    ).distinct()
+
+    author_choices = []
+    for author_id, first_name, last_name, username in authors:
+        full_name = f'{first_name} {last_name}'.strip()
+        author_choices.append({
+            'id': author_id,
+            'name': full_name or username
+        })
+
+    authors_form = BookAuthorsForm(instance=book)
+
+    return render(
+        request,
+        'books/book_detail.html',
+        {
+            'book': book,
+            'articles': articles,
+            'authors_form': authors_form,
+            'selected_status': selected_status,
+            'selected_author': selected_author,
+            'selected_reviewer_filter': selected_reviewer_filter,
+            'author_choices': author_choices,
+            'status_choices': book.articles.model.STATUS_CHOICES,
+        }
+    )
+
+@login_required
+@role_required(['admin'])
+def edit_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+
+    if request.method == 'POST':
+        form = BookForm(request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect('book_detail', book_id=book.id)
+    else:
+        form = BookForm(instance=book)
+
+    return render(
+        request,
+        'books/edit_book.html',
+        {
+            'book': book,
+            'form': form,
+        }
+    )
+
+
+@login_required
+@role_required(['admin'])
+def manage_book_authors(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+
+    if request.method == 'POST':
+        form = BookAuthorsForm(request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect('book_detail', book_id=book.id)
+    else:
+        form = BookAuthorsForm(instance=book)
+
+    return render(
+        request,
+        'books/manage_book_authors.html',
+        {
+            'book': book,
+            'form': form,
+        }
+    )
+
+@login_required
+@role_required(['admin'])
+def book_article_detail(request, book_id, article_id):
+    book = get_object_or_404(Book, id=book_id)
+
+    article = get_object_or_404(
+        Article.objects.select_related('author', 'book').prefetch_related(
+            'review_assignments__reviewer',
+            'review_assignments__reviews',
+            'versions'
+        ),
+        id=article_id,
+        book=book
+    )
+
+    if request.method == 'POST':
+        form = ReviewAssignmentForm(request.POST, article=article)
+        if form.is_valid():
+            assignment = form.save(commit=False)
+            assignment.article = article
+
+            existing_assignment = ReviewAssignment.objects.filter(
+                article=article,
+                reviewer=assignment.reviewer
+            ).exists()
+
+            if existing_assignment:
+                messages.error(request, 'This reviewer is already assigned to this article.')
+            else:
+                assignment.save()
+
+                Notification.objects.create(
+                    user=assignment.reviewer,
+                    title='New review assignment',
+                    message=f'You have been assigned to review the article "{article.title}".',
+                    link=reverse('reviewer_article_detail', args=[assignment.id])
+                )
+
+                if article.status == Article.STATUS_SUBMITTED:
+                    article.status = Article.STATUS_UNDER_REVIEW
+                    article.save()
+
+                messages.success(request, 'Reviewer assigned successfully.')
+                return redirect('book_article_detail', book_id=book.id, article_id=article.id)
+    else:
+        form = ReviewAssignmentForm(article=article)
+
+    return render(
+        request,
+        'books/book_article_detail.html',
+        {
+            'book': book,
+            'article': article,
+            'form': form,
+        }
+    )

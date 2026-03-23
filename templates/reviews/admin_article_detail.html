@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ article.title }}</title>
+</head>
+<body>
+    <h1>{{ article.title }}</h1>
+
+    <p>
+        <a href="{% url 'admin_articles' %}">Back to all articles</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p><strong>{{ message }}</strong></p>
+        {% endfor %}
+    {% endif %}
+
+    <h3>Article information</h3>
+    <p><strong>Author:</strong> {{ article.author }}</p>
+    <p><strong>Book:</strong> {{ article.book }}</p>
+    <p><strong>Status:</strong> {{ article.get_status_display }}</p>
+    <p><strong>Created:</strong> {{ article.created_at }}</p>
+    <p><strong>Updated:</strong> {{ article.updated_at }}</p>
+
+    {% if article.abstract %}
+        <p><strong>Abstract:</strong><br>{{ article.abstract }}</p>
+    {% endif %}
+
+    {% if article.file %}
+        <p><strong>Article file:</strong> <a href="{{ article.file.url }}">Download</a></p>
+    {% endif %}
+    
+    <hr>
+
+    <h3>Assigned reviewers</h3>
+    
+    {% if article.review_assignments.all %}
+        <ul>
+            {% for assignment in article.review_assignments.all %}
+                <li>
+                    <strong>{{ assignment.reviewer }}</strong><br>
+                    Assignment status: {{ assignment.get_status_display }}<br>
+    
+                    {% if assignment.reviews.all %}
+                        Reviews submitted: {{ assignment.reviews.count }}
+                    {% else %}
+                        No reviews submitted yet.
+                    {% endif %}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviewers assigned yet.</p>
+    {% endif %}
+    
+    <hr>
+
+    <h3>Assign reviewer</h3>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Assign reviewer</button>
+    </form>
+
+    <hr>
+
+    <h3>Assigned reviewers</h3>
+
+    {% if article.review_assignments.all %}
+        <ul>
+            {% for assignment in article.review_assignments.all %}
+                <li>
+                    <strong>{{ assignment.reviewer }}</strong><br>
+                    Assignment status: {{ assignment.get_status_display }}<br>
+
+                    {% if assignment.reviews.all %}
+                        <ul>
+                            {% for review in assignment.reviews.all %}
+                                <li>
+                                    For version: {{ review.article_version.version_number }}<br>
+                                    Recommendation: {{ review.get_recommendation_display }}<br>
+                                    Comment: {{ review.comment|linebreaks }}<br>
+                    
+                                    {% if review.file %}
+                                        Review file: <a href="{{ review.file.url }}">Download</a><br>
+                                    {% endif %}
+                    
+                                    Submitted at: {{ review.created_at }}
+                                </li>
+                                <br>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        Review has not been submitted yet.
+                    {% endif %}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviewers assigned yet.</p>
+    {% endif %}
+</body>
+</html>

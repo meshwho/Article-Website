@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Allowed Authors</title>
+</head>
+<body>
+    <h1>Manage Allowed Authors</h1>
+
+    <p>
+        <a href="{% url 'book_detail' book.id %}">Back to book</a>
+    </p>
+
+    <p><strong>Book:</strong> {{ book.title }}</p>
+    <p><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
+
+    {% if book.submission_mode == 'invitation' %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save allowed authors</button>
+        </form>
+    {% else %}
+        <p>This book is open to all authors. Invitation list is not used.</p>
+    {% endif %}
+</body>
+</html>

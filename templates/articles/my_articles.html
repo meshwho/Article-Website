@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My Articles</title>
+</head>
+<body>
+    <h1>My Articles</h1>
+
+    <p>
+        <a href="{% url 'my_notifications' %}">Notifications</a> |
+        <a href="{% url 'create_article' %}">Add new article</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    {% if articles %}
+        <ul>
+            {% for article in articles %}
+                <li>
+                    <strong>
+                        <a href="{% url 'article_detail' article.id %}">
+                            {{ article.title }}
+                        </a>
+                    </strong><br>
+
+                    Book: {{ article.book }}<br>
+                    Status: {{ article.get_status_display }}<br>
+                    Created: {{ article.created_at }}<br>
+
+                    {% if article.file %}
+                        File: <a href="{{ article.file.url }}">Download</a>
+                    {% else %}
+                        No file uploaded
+                    {% endif %}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no articles yet.</p>
+    {% endif %}
+</body>
+</html>

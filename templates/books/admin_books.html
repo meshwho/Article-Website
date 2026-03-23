@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Books</title>
+</head>
+<body>
+    <h1>Books</h1>
+
+    <p>
+        <a href="{% url 'dashboard' %}">Back to dashboard</a> |
+        <a href="{% url 'create_book' %}">Create new book</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    {% if books %}
+        <ul>
+            {% for book in books %}
+                <li>
+                    <strong>
+                        <a href="{% url 'book_detail' book.id %}">{{ book.title }}</a>
+                    </strong><br>
+
+                    Created by: {{ book.created_by }}<br>
+                    Created at: {{ book.created_at }}<br>
+                    Submission mode: {{ book.get_submission_mode_display }}<br>
+                    Submission deadline: {{ book.submission_deadline }}<br>
+                    Allowed authors: {{ book.allowed_authors.count }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No books found.</p>
+    {% endif %}
+</body>
+</html>

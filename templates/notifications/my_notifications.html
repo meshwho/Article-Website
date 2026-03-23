@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My Notifications</title>
+</head>
+<body>
+    <h1>My Notifications</h1>
+
+    <p>
+        <a href="{% url 'dashboard' %}">Back to dashboard</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    {% if notifications %}
+        <ul>
+            {% for notification in notifications %}
+                <li>
+                    <strong>{{ notification.title }}</strong><br>
+                    {{ notification.message }}<br>
+                    Created: {{ notification.created_at }}<br>
+                    Status:
+                    {% if notification.is_read %}
+                        Read
+                    {% else %}
+                        Unread
+                    {% endif %}
+                    <br>
+
+                    {% if not notification.is_read %}
+                        <a href="{% url 'mark_notification_read' notification.id %}">Open</a>
+                    {% elif notification.link %}
+                        <a href="{{ notification.link }}">Open link</a>
+                    {% endif %}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No notifications yet.</p>
+    {% endif %}
+</body>
+</html>

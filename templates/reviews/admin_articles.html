@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>All Articles</title>
+</head>
+<body>
+    <h1>All Articles</h1>
+
+    <p>
+        <a href="{% url 'dashboard' %}">Back to dashboard</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    {% if articles %}
+        <ul>
+            {% for article in articles %}
+                <li>
+                    <strong>
+                        <a href="{% url 'admin_article_detail' article.id %}">
+                            {{ article.title }}
+                        </a>
+                    </strong><br>
+
+                    Author: {{ article.author }}<br>
+                    Book: {{ article.book }}<br>
+                    Status: {{ article.get_status_display }}<br>
+                    Created: {{ article.created_at }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No articles found.</p>
+    {% endif %}
+</body>
+</html>

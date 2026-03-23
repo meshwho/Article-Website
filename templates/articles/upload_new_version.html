@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Upload New Version</title>
+</head>
+<body>
+    <h1>Upload New Version</h1>
+
+    <p>
+        <a href="{% url 'article_detail' article.id %}">Back to article</a>
+    </p>
+
+    <p><strong>Article:</strong> {{ article.title }}</p>
+    <p><strong>Current status:</strong> {{ article.get_status_display }}</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload new version</button>
+    </form>
+</body>
+</html>

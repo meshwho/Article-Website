@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ book.title }}</title>
+</head>
+<body>
+    <h1>{{ book.title }}</h1>
+
+    <p>
+        <a href="{% url 'admin_books' %}">Back to books</a> |
+        <a href="{% url 'edit_book' book.id %}">Edit book settings</a> |
+        {% if book.submission_mode == 'invitation' %}
+            <a href="{% url 'manage_book_authors' book.id %}">Manage allowed authors</a> |
+        {% endif %}
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    <h3>Book settings</h3>
+    <p><strong>Description:</strong> {{ book.description }}</p>
+    <p><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
+    <p><strong>Submission deadline:</strong> {{ book.submission_deadline }}</p>
+    <p><strong>Created by:</strong> {{ book.created_by }}</p>
+    <p><strong>Created at:</strong> {{ book.created_at }}</p>
+
+    <hr>
+
+    {% if book.submission_mode == 'invitation' %}
+        <h3>Allowed authors</h3>
+        {% if book.allowed_authors.all %}
+            <ul>
+                {% for author in book.allowed_authors.all %}
+                    <li>{{ author }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No allowed authors selected yet.</p>
+        {% endif %}
+        <hr>
+    {% endif %}
+
+    <h3>Articles in this book</h3>
+
+    <form method="get">
+        <p>
+            <label for="status">Filter by status:</label>
+            <select name="status" id="status">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+    
+        <p>
+            <label for="author">Filter by author:</label>
+            <select name="author" id="author">
+                <option value="">All authors</option>
+                {% for author in author_choices %}
+                    <option value="{{ author.id }}" {% if selected_author == author.id|stringformat:"s" %}selected{% endif %}>
+                        {{ author.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+    
+        <p>
+            <label for="reviewer_filter">Filter by reviewer assignment:</label>
+            <select name="reviewer_filter" id="reviewer_filter">
+                <option value="">All articles</option>
+                <option value="with_reviewer" {% if selected_reviewer_filter == 'with_reviewer' %}selected{% endif %}>
+                    With reviewer
+                </option>
+                <option value="without_reviewer" {% if selected_reviewer_filter == 'without_reviewer' %}selected{% endif %}>
+                    Without reviewer
+                </option>
+            </select>
+        </p>
+    
+        <button type="submit">Apply filters</button>
+        <a href="{% url 'book_detail' book.id %}">Reset</a>
+    </form>
+    
+    <br>
+    
+    {% if articles %}
+        <ul>
+            {% for article in articles %}
+                <li>
+                    <strong>
+                        <a href="{% url 'book_article_detail' book.id article.id %}">
+                            {{ article.title }}
+                        </a>
+                    </strong><br>
+                    Author: {{ article.author }}<br>
+                    Status: {{ article.get_status_display }}<br>
+                    Reviewer assigned:
+                    {% if article.review_assignments.all %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No articles found for selected filters.</p>
+    {% endif %}
+</body>
+</html>

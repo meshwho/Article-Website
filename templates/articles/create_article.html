@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Create Article</title>
+</head>
+<body>
+    <h1>Create Article</h1>
+
+    <p><a href="{% url 'my_articles' %}">Back to my articles</a></p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save article</button>
+    </form>
+</body>
+</html>

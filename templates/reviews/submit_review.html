@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Review</title>
+</head>
+<body>
+    <h1>Submit Review</h1>
+
+    <p>
+        <a href="{% url 'reviewer_assignments' %}">Back to assignments</a>
+    </p>
+
+    <h3>{{ assignment.article.title }}</h3>
+    <p>Book: {{ assignment.article.book }}</p>
+    <p>Author: {{ assignment.article.author }}</p>
+
+    {% if assignment.article.file %}
+        <p><a href="{{ assignment.article.file.url }}">Download article file</a></p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit review</button>
+    </form>
+</body>
+</html>

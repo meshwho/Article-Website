@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ article.title }}</title>
+</head>
+<body>
+    <h1>{{ article.title }}</h1>
+
+    <p>
+        <a href="{% url 'reviewer_assignments' %}">Back to all assigned articles</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    <h3>Article information</h3>
+    <p><strong>Book:</strong> {{ article.book }}</p>
+    <p><strong>Author:</strong> {{ article.author }}</p>
+    <p><strong>Status:</strong> {{ article.get_status_display }}</p>
+    <p><strong>Created:</strong> {{ article.created_at }}</p>
+    <p><strong>Updated:</strong> {{ article.updated_at }}</p>
+
+    {% if article.abstract %}
+        <p><strong>Abstract:</strong><br>{{ article.abstract }}</p>
+    {% endif %}
+
+    {% if article.file %}
+        <p><strong>Current article file:</strong> <a href="{{ article.file.url }}">Download</a></p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Article version history</h3>
+    {% if article.versions.all %}
+        <ul>
+            {% for version in article.versions.all %}
+                <li>
+                    <strong>Version {{ version.version_number }}</strong><br>
+                    Uploaded at: {{ version.uploaded_at }}<br>
+                    Uploaded by: {{ version.uploaded_by }}<br>
+
+                    {% if version.comment %}
+                        Author comment: {{ version.comment }}<br>
+                    {% endif %}
+
+                    <a href="{{ version.file.url }}">Download this version</a>
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No versions found.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Review history</h3>
+    {% if assignment.reviews.all %}
+        <ul>
+            {% for review in assignment.reviews.all %}
+                <li>
+                    <strong>For version:</strong> {{ review.article_version.version_number }}<br>
+                    <strong>Recommendation:</strong> {{ review.get_recommendation_display }}<br>
+                    <strong>Comment:</strong><br>
+                    {{ review.comment|linebreaks }}<br>
+    
+                    {% if review.file %}
+                        <strong>Review file:</strong>
+                        <a href="{{ review.file.url }}">Download</a><br>
+                    {% endif %}
+    
+                    <strong>Submitted at:</strong> {{ review.created_at }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews submitted yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Submit new review</h3>
+    <form method="post" action="{% url 'submit_review' assignment.id %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit review</button>
+    </form>
+</body>
+</html>

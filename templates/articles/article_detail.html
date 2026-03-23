@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ article.title }}</title>
+</head>
+<body>
+    <h1>{{ article.title }}</h1>
+
+    <p>
+        <a href="{% url 'my_articles' %}">Back to my articles</a> |
+        <a href="{% url 'upload_new_version' article.id %}">Upload new version</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    <h3>Article information</h3>
+    <p><strong>Book:</strong> {{ article.book }}</p>
+    <p><strong>Status:</strong> {{ article.get_status_display }}</p>
+    <p><strong>Created:</strong> {{ article.created_at }}</p>
+    <p><strong>Updated:</strong> {{ article.updated_at }}</p>
+
+    {% if article.abstract %}
+        <p><strong>Abstract:</strong><br>{{ article.abstract }}</p>
+    {% endif %}
+
+    {% if article.file %}
+        <p><strong>Article file:</strong> <a href="{{ article.file.url }}">Download</a></p>
+    {% endif %}
+    
+    <hr>
+
+    <h3>Article Versions</h3>
+    
+    {% if article.versions.all %}
+        <ul>
+            {% for version in article.versions.all %}
+                <li>
+                    <strong>Version {{ version.version_number }}</strong><br>
+                    Uploaded at: {{ version.uploaded_at }}<br>
+                    Uploaded by: {{ version.uploaded_by }}<br>
+    
+                    {% if version.comment %}
+                        Comment: {{ version.comment }}<br>
+                    {% endif %}
+    
+                    <a href="{{ version.file.url }}">Download version file</a>
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No versions found.</p>
+    {% endif %}
+    
+    <hr>
+    
+    <h3>Reviews</h3>
+
+    {% if article.review_assignments.all %}
+        {% for assignment in article.review_assignments.all %}
+            <div style="margin-bottom: 20px;">
+                <p><strong>Reviewer:</strong> {{ assignment.reviewer }}</p>
+                <p><strong>Assignment status:</strong> {{ assignment.get_status_display }}</p>
+
+                {% if assignment.reviews.all %}
+                    <p><strong>All reviews from this reviewer:</strong></p>
+                
+                    <ul>
+                        {% for review in assignment.reviews.all %}
+                            <li>
+                                <p><strong>For version:</strong> {{ review.article_version.version_number }}</p>
+                                <p><strong>Recommendation:</strong> {{ review.get_recommendation_display }}</p>
+                                <p><strong>Comment:</strong><br>{{ review.comment|linebreaks }}</p>
+                
+                                {% if review.file %}
+                                    <p>
+                                        <strong>Review file:</strong>
+                                        <a href="{{ review.file.url }}">Download</a>
+                                    </p>
+                                {% endif %}
+                
+                                <p><strong>Submitted at:</strong> {{ review.created_at }}</p>
+                            </li>
+                            <br>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Review has not been submitted yet.</p>
+                {% endif %}
+            </div>
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>No reviewers assigned yet.</p>
+    {% endif %}
+</body>
+</html>
