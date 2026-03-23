@@ -14,7 +14,8 @@ from notifications.models import Notification
 @role_required(['reviewer'])
 def reviewer_assignments(request):
     assignments = ReviewAssignment.objects.filter(
-        reviewer=request.user
+        reviewer=request.user,
+        is_active=True
     ).select_related(
         'article',
         'article__book',
@@ -44,7 +45,8 @@ def reviewer_article_detail(request, assignment_id):
             'reviews'
         ),
         id=assignment_id,
-        reviewer=request.user
+        reviewer=request.user,
+        is_active=True
     )
 
     form = ReviewForm(assignment=assignment)
@@ -66,7 +68,8 @@ def submit_review(request, assignment_id):
     assignment = get_object_or_404(
         ReviewAssignment.objects.select_related('article'),
         id=assignment_id,
-        reviewer=request.user
+        reviewer=request.user,
+        is_active=True
     )
 
     if request.method == 'POST':
@@ -148,17 +151,38 @@ def admin_article_detail(request, article_id):
     if request.method == 'POST':
         form = ReviewAssignmentForm(request.POST, article=article)
         if form.is_valid():
-            assignment = form.save(commit=False)
-            assignment.article = article
+            reviewer = form.cleaned_data['reviewer']
 
             existing_assignment = ReviewAssignment.objects.filter(
                 article=article,
-                reviewer=assignment.reviewer
-            ).exists()
+                reviewer=reviewer
+            ).first()
 
             if existing_assignment:
-                messages.error(request, 'This reviewer is already assigned to this article.')
+                if existing_assignment.is_active:
+                    messages.error(request, 'This reviewer is already assigned to this article.')
+                else:
+                    existing_assignment.is_active = True
+                    existing_assignment.status = ReviewAssignment.STATUS_ASSIGNED
+                    existing_assignment.save()
+
+                    Notification.objects.create(
+                        user=existing_assignment.reviewer,
+                        title='New review assignment',
+                        message=f'You have been assigned to review the article "{article.title}".',
+                        link=reverse('reviewer_article_detail', args=[existing_assignment.id])
+                    )
+
+                    if article.status == Article.STATUS_SUBMITTED:
+                        article.status = Article.STATUS_UNDER_REVIEW
+                        article.save()
+
+                    messages.success(request, 'Reviewer assigned successfully.')
+                    return redirect('admin_article_detail', article_id=article.id)
             else:
+                assignment = form.save(commit=False)
+                assignment.article = article
+                assignment.is_active = True
                 assignment.save()
 
                 Notification.objects.create(
@@ -185,3 +209,43 @@ def admin_article_detail(request, article_id):
             'form': form,
         }
     )
+
+@login_required
+@role_required(['admin'])
+def remove_reviewer(request, assignment_id):
+    assignment = get_object_or_404(
+        ReviewAssignment.objects.select_related('article'),
+        id=assignment_id
+    )
+
+    article = assignment.article
+    assignment.is_active = False
+    assignment.save()
+
+    if not article.review_assignments.filter(is_active=True).exists() and article.status == Article.STATUS_UNDER_REVIEW:
+        article.status = Article.STATUS_SUBMITTED
+        article.save()
+
+    messages.success(request, 'Reviewer removed from active assignments. Review history was kept.')
+    return redirect('admin_article_detail', article_id=article.id)
+
+
+@login_required
+@role_required(['admin'])
+def remove_reviewer_from_book_article(request, book_id, article_id, assignment_id):
+    assignment = get_object_or_404(
+        ReviewAssignment.objects.select_related('article'),
+        id=assignment_id,
+        article_id=article_id
+    )
+
+    article = assignment.article
+    assignment.is_active = False
+    assignment.save()
+
+    if not article.review_assignments.filter(is_active=True).exists() and article.status == Article.STATUS_UNDER_REVIEW:
+        article.status = Article.STATUS_SUBMITTED
+        article.save()
+
+    messages.success(request, 'Reviewer removed from active assignments. Review history was kept.')
+    return redirect('book_article_detail', book_id=book_id, article_id=article_id)

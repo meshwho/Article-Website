@@ -43,11 +43,50 @@
                 <li>
                     <strong>{{ assignment.reviewer }}</strong><br>
                     Assignment status: {{ assignment.get_status_display }}<br>
+                    Reviewer state:
+                    {% if assignment.is_active %}
+                        Active
+                    {% else %}
+                        Removed
+                    {% endif %}
+                    <br>
+    
+                    {% if assignment.is_active %}
+                        <p>
+                            <a href="{% url 'remove_reviewer' article.id assignment.id %}">
+                                Remove reviewer
+                            </a>
+                        </p>
+                    {% endif %}
     
                     {% if assignment.reviews.all %}
-                        Reviews submitted: {{ assignment.reviews.count }}
+                        <ul>
+                            {% for review in assignment.reviews.all %}
+                                <li>
+                                    <strong>For version:</strong>
+                                    {% if review.article_version %}
+                                        {{ review.article_version.version_number }}
+                                    {% else %}
+                                        old review (version not specified)
+                                    {% endif %}
+                                    <br>
+    
+                                    <strong>Recommendation:</strong> {{ review.get_recommendation_display }}<br>
+                                    <strong>Comment:</strong><br>
+                                    {{ review.comment|linebreaks }}<br>
+    
+                                    {% if review.file %}
+                                        <strong>Review file:</strong>
+                                        <a href="{{ review.file.url }}">Download</a><br>
+                                    {% endif %}
+    
+                                    <strong>Submitted at:</strong> {{ review.created_at }}
+                                </li>
+                                <br>
+                            {% endfor %}
+                        </ul>
                     {% else %}
-                        No reviews submitted yet.
+                        <p>No reviews submitted yet.</p>
                     {% endif %}
                 </li>
                 <br>
@@ -69,41 +108,5 @@
 
     <hr>
 
-    <h3>Assigned reviewers</h3>
-
-    {% if article.review_assignments.all %}
-        <ul>
-            {% for assignment in article.review_assignments.all %}
-                <li>
-                    <strong>{{ assignment.reviewer }}</strong><br>
-                    Assignment status: {{ assignment.get_status_display }}<br>
-
-                    {% if assignment.reviews.all %}
-                        <ul>
-                            {% for review in assignment.reviews.all %}
-                                <li>
-                                    For version: {{ review.article_version.version_number }}<br>
-                                    Recommendation: {{ review.get_recommendation_display }}<br>
-                                    Comment: {{ review.comment|linebreaks }}<br>
-                    
-                                    {% if review.file %}
-                                        Review file: <a href="{{ review.file.url }}">Download</a><br>
-                                    {% endif %}
-                    
-                                    Submitted at: {{ review.created_at }}
-                                </li>
-                                <br>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        Review has not been submitted yet.
-                    {% endif %}
-                </li>
-                <br>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No reviewers assigned yet.</p>
-    {% endif %}
 </body>
 </html>

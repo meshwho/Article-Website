@@ -165,17 +165,38 @@ def book_article_detail(request, book_id, article_id):
     if request.method == 'POST':
         form = ReviewAssignmentForm(request.POST, article=article)
         if form.is_valid():
-            assignment = form.save(commit=False)
-            assignment.article = article
+            reviewer = form.cleaned_data['reviewer']
 
             existing_assignment = ReviewAssignment.objects.filter(
                 article=article,
-                reviewer=assignment.reviewer
-            ).exists()
+                reviewer=reviewer
+            ).first()
 
             if existing_assignment:
-                messages.error(request, 'This reviewer is already assigned to this article.')
+                if existing_assignment.is_active:
+                    messages.error(request, 'This reviewer is already assigned to this article.')
+                else:
+                    existing_assignment.is_active = True
+                    existing_assignment.status = ReviewAssignment.STATUS_ASSIGNED
+                    existing_assignment.save()
+
+                    Notification.objects.create(
+                        user=existing_assignment.reviewer,
+                        title='New review assignment',
+                        message=f'You have been assigned to review the article "{article.title}".',
+                        link=reverse('reviewer_article_detail', args=[existing_assignment.id])
+                    )
+
+                    if article.status == Article.STATUS_SUBMITTED:
+                        article.status = Article.STATUS_UNDER_REVIEW
+                        article.save()
+
+                    messages.success(request, 'Reviewer assigned successfully.')
+                    return redirect('book_article_detail', book_id=book.id, article_id=article.id)
             else:
+                assignment = form.save(commit=False)
+                assignment.article = article
+                assignment.is_active = True
                 assignment.save()
 
                 Notification.objects.create(

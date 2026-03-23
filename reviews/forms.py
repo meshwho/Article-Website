@@ -35,7 +35,7 @@ class ReviewAssignmentForm(forms.ModelForm):
         queryset = CustomUser.objects.filter(role='reviewer')
 
         if article is not None:
-            assigned_reviewer_ids = article.review_assignments.values_list('reviewer_id', flat=True)
+            assigned_reviewer_ids = article.review_assignments.filter(is_active=True).values_list('reviewer_id', flat=True)
             queryset = queryset.exclude(id__in=assigned_reviewer_ids)
 
         self.fields['reviewer'].queryset = queryset
