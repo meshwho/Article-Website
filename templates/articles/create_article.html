@@ -7,7 +7,16 @@
 <body>
     <h1>Create Article</h1>
 
-    <p><a href="{% url 'my_articles' %}">Back to my articles</a></p>
+    <p>
+        <a href="{% url 'choose_book' %}">Back to books</a> |
+        <a href="{% url 'my_articles' %}">Back to my articles</a>
+    </p>
+
+    <h3>Selected book</h3>
+    <p><strong>Title:</strong> {{ book.title }}</p>
+    <p><strong>Description:</strong> {{ book.description }}</p>
+    <p><strong>Submission deadline:</strong> {{ book.submission_deadline }}</p>
+    <p><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}

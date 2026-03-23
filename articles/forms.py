@@ -9,21 +9,17 @@ from .models import Article, ArticleVersion
 class ArticleCreateForm(forms.ModelForm):
     class Meta:
         model = Article
-        fields = ['title', 'abstract', 'book', 'file']
+        fields = ['title', 'abstract', 'file']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        fixed_book = kwargs.pop('fixed_book', None)
         super().__init__(*args, **kwargs)
 
-        queryset = Book.objects.all()
-
-        if user is not None:
-            queryset = queryset.filter(submission_deadline__gte=timezone.now()).filter(
-                models.Q(submission_mode=Book.SUBMISSION_MODE_ALL) |
-                models.Q(submission_mode=Book.SUBMISSION_MODE_INVITATION, allowed_authors=user)
-            ).distinct()
-
-        self.fields['book'].queryset = queryset
+        if fixed_book is not None:
+            self.book = fixed_book
+        else:
+            self.book = None
 
 
 class ArticleEditForm(forms.ModelForm):

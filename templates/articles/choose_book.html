@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Choose Book</title>
+</head>
+<body>
+    <h1>Choose a Book</h1>
+
+    <p>
+        <a href="{% url 'my_notifications' %}">Notifications ({{ unread_count }})</a> |
+        <a href="{% url 'my_articles' %}">Back to my articles</a> |
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    </p>
+
+    <form method="get">
+        <p>
+            <label for="q">Search by title:</label>
+            <input type="text" name="q" id="q" value="{{ search_query }}">
+        </p>
+
+        <p>
+            <label for="creator">Filter by creator:</label>
+            <select name="creator" id="creator">
+                <option value="">All creators</option>
+                {% for creator in creators %}
+                    <option value="{{ creator.id }}" {% if selected_creator == creator.id|stringformat:"s" %}selected{% endif %}>
+                        {{ creator.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <button type="submit">Apply</button>
+        <a href="{% url 'choose_book' %}">Reset</a>
+    </form>
+
+    <hr>
+
+    <h2>Open books (all authors can submit)</h2>
+    {% if open_books %}
+        <ul>
+            {% for book in open_books %}
+                <li>
+                    <strong>
+                        <a href="{% url 'create_article' book.id %}">{{ book.title }}</a>
+                    </strong><br>
+                    Description: {{ book.description }}<br>
+                    Deadline: {{ book.submission_deadline }}<br>
+                    Created by: {{ book.created_by }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No open books found.</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Invitation books</h2>
+    {% if invitation_books %}
+        <ul>
+            {% for book in invitation_books %}
+                <li>
+                    <strong>
+                        <a href="{% url 'create_article' book.id %}">{{ book.title }}</a>
+                    </strong><br>
+                    Description: {{ book.description }}<br>
+                    Deadline: {{ book.submission_deadline }}<br>
+                    Created by: {{ book.created_by }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No invitation books found.</p>
+    {% endif %}
+</body>
+</html>
