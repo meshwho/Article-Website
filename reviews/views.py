@@ -25,12 +25,16 @@ def reviewer_assignments(request):
         'reviews'
     ).order_by('-assigned_at')
 
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
     return render(
         request,
         'reviews/reviewer_assignments.html',
-        {'assignments': assignments}
+        {
+            'assignments': assignments,
+            'unread_count': unread_count,
+        }
     )
-
 
 @login_required
 @role_required(['reviewer'])

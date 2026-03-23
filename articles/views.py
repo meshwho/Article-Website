@@ -11,8 +11,15 @@ from django.urls import reverse
 @role_required(['author'])
 def my_articles(request):
     articles = Article.objects.filter(author=request.user).order_by('-created_at')
-    return render(request, 'articles/my_articles.html', {'articles': articles})
-
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return render(
+        request,
+        'articles/my_articles.html',
+        {
+            'articles': articles,
+            'unread_count': unread_count,
+        }
+    )
 
 @login_required
 @role_required(['author'])

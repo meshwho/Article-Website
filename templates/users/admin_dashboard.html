@@ -10,7 +10,7 @@
     <p>You are logged in as admin.</p>
 
     <p>
-        <a href="{% url 'my_notifications' %}">Notifications</a> |
+        <a href="{% url 'my_notifications' %}">Notifications ({{ unread_count }})</a> |
         <a href="{% url 'admin_books' %}">Manage books</a> |
         <a href="{% url 'admin_articles' %}">Manage articles</a> |
         <a href="/admin/">Open Django admin</a> |

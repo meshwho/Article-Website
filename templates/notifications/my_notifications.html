@@ -12,10 +12,21 @@
         <a href="{% url 'custom_logout' %}">Logout</a>
     </p>
 
+    <p>
+        Unread notifications: <strong>{{ unread_count }}</strong>
+        {% if unread_count > 0 %}
+            | <a href="{% url 'mark_all_notifications_read' %}">Mark all as read</a>
+        {% endif %}
+    </p>
+
     {% if notifications %}
         <ul>
             {% for notification in notifications %}
                 <li>
+                    {% if not notification.is_read %}
+                        <strong>[NEW]</strong>
+                    {% endif %}
+
                     <strong>{{ notification.title }}</strong><br>
                     {{ notification.message }}<br>
                     Created: {{ notification.created_at }}<br>
