@@ -14,8 +14,7 @@ from notifications.models import Notification
 @role_required(['reviewer'])
 def reviewer_assignments(request):
     assignments = ReviewAssignment.objects.filter(
-        reviewer=request.user,
-        is_active=True
+        reviewer=request.user
     ).select_related(
         'article',
         'article__book',
@@ -27,12 +26,36 @@ def reviewer_assignments(request):
 
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
 
+    waiting_for_review = []
+    already_reviewed_latest = []
+
+    for assignment in assignments:
+        latest_version = assignment.article.versions.first()
+        latest_reviewed_version = assignment.reviews.order_by('-created_at').first()
+
+        assignment.latest_version = latest_version
+        assignment.latest_reviewed_version = latest_reviewed_version
+
+        if latest_version is None:
+            waiting_for_review.append(assignment)
+        elif latest_reviewed_version is None:
+            waiting_for_review.append(assignment)
+        elif latest_reviewed_version.article_version_id != latest_version.id:
+            waiting_for_review.append(assignment)
+        else:
+            already_reviewed_latest.append(assignment)
+
     return render(
         request,
         'reviews/reviewer_assignments.html',
         {
             'assignments': assignments,
             'unread_count': unread_count,
+            'waiting_for_review': waiting_for_review,
+            'already_reviewed_latest': already_reviewed_latest,
+            'total_assignments_count': assignments.count(),
+            'waiting_count': len(waiting_for_review),
+            'reviewed_count': len(already_reviewed_latest),
         }
     )
 

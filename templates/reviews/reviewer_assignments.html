@@ -12,9 +12,17 @@
         <a href="{% url 'custom_logout' %}">Logout</a>
     </p>
 
-    {% if assignments %}
+    <h3>Summary</h3>
+    <p>Total assignments: <strong>{{ total_assignments_count }}</strong></p>
+    <p>Waiting for your review: <strong>{{ waiting_count }}</strong></p>
+    <p>Latest version already reviewed: <strong>{{ reviewed_count }}</strong></p>
+
+    <hr>
+
+    <h3>Waiting for your review</h3>
+    {% if waiting_for_review %}
         <ul>
-            {% for assignment in assignments %}
+            {% for assignment in waiting_for_review %}
                 <li>
                     <strong>
                         <a href="{% url 'reviewer_article_detail' assignment.id %}">
@@ -27,17 +35,64 @@
                     Article status: {{ assignment.article.get_status_display }}<br>
                     Assignment status: {{ assignment.get_status_display }}<br>
 
-                    {% if assignment.article.versions.all %}
-                        Latest version:
-                        {{ assignment.article.versions.first.version_number }}
-                        ({{ assignment.article.versions.first.uploaded_at }})<br>
+                    {% if assignment.latest_version %}
+                        Latest version: {{ assignment.latest_version.version_number }} ({{ assignment.latest_version.uploaded_at }})<br>
+                    {% endif %}
+
+                    {% if assignment.latest_reviewed_version %}
+                        Your latest reviewed version:
+                        {% if assignment.latest_reviewed_version.article_version %}
+                            {{ assignment.latest_reviewed_version.article_version.version_number }}
+                        {% else %}
+                            old review (version not specified)
+                        {% endif %}
+                    {% else %}
+                        You have not reviewed this article yet.
                     {% endif %}
                 </li>
                 <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No assignments yet.</p>
+        <p>No articles are waiting for your review.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Latest version already reviewed</h3>
+    {% if already_reviewed_latest %}
+        <ul>
+            {% for assignment in already_reviewed_latest %}
+                <li>
+                    <strong>
+                        <a href="{% url 'reviewer_article_detail' assignment.id %}">
+                            {{ assignment.article.title }}
+                        </a>
+                    </strong><br>
+
+                    Book: {{ assignment.article.book }}<br>
+                    Author: {{ assignment.article.author }}<br>
+                    Article status: {{ assignment.article.get_status_display }}<br>
+                    Assignment status: {{ assignment.get_status_display }}<br>
+
+                    {% if assignment.latest_version %}
+                        Latest version: {{ assignment.latest_version.version_number }} ({{ assignment.latest_version.uploaded_at }})<br>
+                    {% endif %}
+
+                    {% if assignment.latest_reviewed_version %}
+                        Your latest reviewed version:
+                        {% if assignment.latest_reviewed_version.article_version %}
+                            {{ assignment.latest_reviewed_version.article_version.version_number }}
+                        {% else %}
+                            old review (version not specified)
+                        {% endif %}
+                    {% endif %}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No fully reviewed assignments yet.</p>
     {% endif %}
 </body>
 </html>

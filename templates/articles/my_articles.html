@@ -13,31 +13,86 @@
         <a href="{% url 'custom_logout' %}">Logout</a>
     </p>
 
-    {% if articles %}
-        <ul>
-            {% for article in articles %}
-                <li>
-                    <strong>
-                        <a href="{% url 'article_detail' article.id %}">
-                            {{ article.title }}
-                        </a>
-                    </strong><br>
+    <h3>Summary</h3>
+    <p>Total articles: <strong>{{ total_articles_count }}</strong></p>
+    <p>Requires revision: <strong>{{ revision_count }}</strong></p>
+    <p>Under review: <strong>{{ review_count }}</strong></p>
+    <p>Accepted: <strong>{{ accepted_count }}</strong></p>
 
+    <hr>
+
+    <h3>Requires revision</h3>
+    {% if revision_articles %}
+        <ul>
+            {% for article in revision_articles %}
+                <li>
+                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
                     Book: {{ article.book }}<br>
                     Status: {{ article.get_status_display }}<br>
-                    Created: {{ article.created_at }}<br>
-
-                    {% if article.file %}
-                        File: <a href="{{ article.file.url }}">Download</a>
-                    {% else %}
-                        No file uploaded
-                    {% endif %}
+                    Updated: {{ article.updated_at }}
                 </li>
                 <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>You have no articles yet.</p>
+        <p>No articles require revision.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Under review</h3>
+    {% if review_articles %}
+        <ul>
+            {% for article in review_articles %}
+                <li>
+                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
+                    Book: {{ article.book }}<br>
+                    Status: {{ article.get_status_display }}<br>
+                    Updated: {{ article.updated_at }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No articles are currently under review.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Accepted</h3>
+    {% if accepted_articles %}
+        <ul>
+            {% for article in accepted_articles %}
+                <li>
+                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
+                    Book: {{ article.book }}<br>
+                    Status: {{ article.get_status_display }}<br>
+                    Updated: {{ article.updated_at }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No accepted articles yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Other</h3>
+    {% if other_articles %}
+        <ul>
+            {% for article in other_articles %}
+                <li>
+                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
+                    Book: {{ article.book }}<br>
+                    Status: {{ article.get_status_display }}<br>
+                    Updated: {{ article.updated_at }}
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No other articles.</p>
     {% endif %}
 </body>
 </html>

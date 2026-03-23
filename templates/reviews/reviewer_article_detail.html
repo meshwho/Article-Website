@@ -9,6 +9,7 @@
 
     <p>
         <a href="{% url 'reviewer_assignments' %}">Back to all assigned articles</a> |
+        <a href="{% url 'my_notifications' %}">Notifications</a> |
         <a href="{% url 'custom_logout' %}">Logout</a>
     </p>
 
@@ -26,6 +27,17 @@
     {% if article.file %}
         <p><strong>Current article file:</strong> <a href="{{ article.file.url }}">Download</a></p>
     {% endif %}
+    
+    {% with latest_version=article.versions.first latest_review=assignment.reviews.first %}
+        <p>
+            <strong>Review status for latest version:</strong>
+            {% if latest_version and latest_review and latest_review.article_version and latest_review.article_version.id == latest_version.id %}
+                Latest version already reviewed
+            {% else %}
+                New review is needed
+            {% endif %}
+        </p>
+    {% endwith %}
 
     <hr>
 
