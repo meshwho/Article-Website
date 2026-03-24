@@ -8,10 +8,19 @@
     Review article details, uploaded versions and all reviewer comments.
 </p>
 
-<p>
+<div class="action-row">
     <a href="{% url 'my_articles' %}" class="btn btn-secondary">Back to my articles</a>
+    <a href="{% url 'edit_article' article.id %}" class="btn btn-secondary">Edit article</a>
     <a href="{% url 'upload_new_version' article.id %}" class="btn">Upload new version</a>
-</p>
+
+    <form method="post"
+          action="{% url 'delete_article' article.id %}"
+          class="inline-form push-right"
+          onsubmit="return confirm('Delete this article?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete article</button>
+    </form>
+</div>
 
 <div class="summary-grid">
     <div class="summary-box">
@@ -47,10 +56,22 @@
                     <h3 class="item-title">Version {{ version.version_number }}</h3>
                     <p class="item-meta">Uploaded at: {{ version.uploaded_at }}</p>
                     <p class="item-meta">Uploaded by: {{ version.uploaded_by }}</p>
+                
                     {% if version.comment %}
-                        <p class="card-text">{{ version.comment }}</p>
+                        <div class="card-text">{{ version.comment }}</div>
                     {% endif %}
-                    <a href="{{ version.file.url }}" class="btn btn-secondary">Download version file</a>
+                
+                    <p>
+                        <a href="{{ version.file.url }}" class="btn btn-secondary">Download version file</a>
+                    </p>
+                
+                    <form method="post"
+                          action="{% url 'delete_article_version' version.id %}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete this article version?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete version</button>
+                    </form>
                 </li>
             {% endfor %}
         </ul>

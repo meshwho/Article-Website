@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<h1 class="page-title">My Profile</h1>
+<p class="page-intro">
+    Update your account information and keep your public profile data accurate.
+</p>
+
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Role</span>
+        <span class="summary-value">{{ request.user.get_role_display }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Username</span>
+        <span class="summary-value">{{ request.user.username }}</span>
+    </div>
+</div>
+
+<div class="form-panel">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save profile</button>
+    </form>
+</div>
+
+<h2 class="section-title">Password</h2>
+<div class="list-panel">
+    <p class="item-meta">
+        You can change your password using the standard password change form.
+    </p>
+    <p>
+        <a href="{% url 'password_change' %}" class="btn btn-secondary">Change password</a>
+    </p>
+</div>
+{% endblock %}

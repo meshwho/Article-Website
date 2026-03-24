@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from notifications.models import Notification
-from .forms import CustomUserRegistrationForm
+from .forms import CustomUserRegistrationForm, ProfileForm
 
 
 def home(request):
@@ -42,6 +42,28 @@ def dashboard(request):
         return redirect('reviewer_assignments')
 
     return render(request, 'users/dashboard.html', {'unread_count': unread_count})
+
+
+@login_required
+def profile(request):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=request.user)
+
+    return render(
+        request,
+        'users/profile.html',
+        {
+            'form': form,
+            'unread_count': unread_count,
+        }
+    )
 
 
 def custom_logout(request):

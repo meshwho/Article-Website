@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     admin_article_detail,
     admin_articles,
+    delete_review,
     remove_reviewer,
     remove_reviewer_from_book_article,
     reviewer_article_detail,
@@ -23,4 +24,5 @@ urlpatterns = [
         remove_reviewer_from_book_article,
         name='remove_reviewer_from_book_article'
     ),
+    path('reviews/<int:review_id>/delete/', delete_review, name='delete_review'),
 ]

@@ -37,22 +37,7 @@
     {% endif %}
 </div>
 
-{% if book.submission_mode == 'invitation' %}
-<h2 class="section-title">Allowed Authors</h2>
-<div class="list-panel">
-    {% if book.allowed_authors.all %}
-        <ul class="item-list">
-            {% for author in book.allowed_authors.all %}
-                <li>
-                    <h3 class="item-title">{{ author }}</h3>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="empty-state">No allowed authors selected yet.</p>
-    {% endif %}
-</div>
-{% endif %}
+
 
 <h2 class="section-title">Articles in this Book</h2>
 

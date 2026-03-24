@@ -253,3 +253,44 @@ def upload_new_version(request, article_id):
             'form': form,
         }
     )
+
+@login_required
+@role_required(['author'])
+def delete_article(request, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id,
+        author=request.user
+    )
+
+    if request.method == 'POST':
+        article.delete()
+        return redirect('my_articles')
+
+    return redirect('article_detail', article_id=article.id)
+
+
+@login_required
+@role_required(['author'])
+def delete_article_version(request, version_id):
+    version = get_object_or_404(
+        ArticleVersion.objects.select_related('article'),
+        id=version_id,
+        article__author=request.user
+    )
+
+    article = version.article
+
+    if request.method == 'POST':
+        version.delete()
+
+        latest_version = article.versions.first()
+        if latest_version:
+            article.file = latest_version.file
+        else:
+            article.file = None
+        article.save()
+
+        return redirect('article_detail', article_id=article.id)
+
+    return redirect('article_detail', article_id=article.id)

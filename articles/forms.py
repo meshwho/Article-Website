@@ -25,7 +25,7 @@ class ArticleCreateForm(forms.ModelForm):
 class ArticleEditForm(forms.ModelForm):
     class Meta:
         model = Article
-        fields = ['title', 'abstract', 'file']
+        fields = ['title', 'abstract']
 
 
 class ArticleVersionForm(forms.ModelForm):

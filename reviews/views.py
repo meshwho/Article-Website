@@ -287,3 +287,26 @@ def remove_reviewer_from_book_article(request, book_id, article_id, assignment_i
 
     messages.success(request, 'Reviewer removed from active assignments. Review history was kept.')
     return redirect('book_article_detail', book_id=book_id, article_id=article_id)
+
+
+@login_required
+@role_required(['reviewer'])
+def delete_review(request, review_id):
+    review = get_object_or_404(
+        Review.objects.select_related('assignment'),
+        id=review_id,
+        assignment__reviewer=request.user
+    )
+
+    assignment = review.assignment
+
+    if request.method == 'POST':
+        review.delete()
+
+        if not assignment.reviews.exists():
+            assignment.status = ReviewAssignment.STATUS_ASSIGNED
+            assignment.save()
+
+        return redirect('reviewer_article_detail', assignment_id=assignment.id)
+
+    return redirect('reviewer_article_detail', assignment_id=assignment.id)

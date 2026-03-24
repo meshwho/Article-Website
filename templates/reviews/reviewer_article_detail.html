@@ -86,10 +86,20 @@
                     </p>
                     <p class="item-meta"><strong>Recommendation:</strong> {{ review.get_recommendation_display }}</p>
                     <div class="card-text">{{ review.comment|linebreaks }}</div>
+                
                     {% if review.file %}
                         <p><a href="{{ review.file.url }}" class="btn btn-secondary">Download review file</a></p>
                     {% endif %}
+                
                     <p class="item-meta">Submitted at: {{ review.created_at }}</p>
+                
+                    <form method="post"
+                          action="{% url 'delete_review' review.id %}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete this review?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete review</button>
+                    </form>
                 </li>
             {% endfor %}
         </ul>

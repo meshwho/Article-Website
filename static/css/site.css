@@ -566,3 +566,32 @@ textarea {
 .field-errors {
     margin-top: 8px;
 }
+
+.btn-danger {
+    background: var(--red);
+    color: #ffffff;
+    border-color: var(--red);
+}
+
+.btn-danger:hover {
+    background: #b70d07;
+    color: #ffffff;
+    border-color: #b70d07;
+}
+
+.action-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.inline-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.push-right {
+    margin-left: auto;
+}
