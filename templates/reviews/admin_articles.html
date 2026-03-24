@@ -1,37 +1,36 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>All Articles</title>
-</head>
-<body>
-    <h1>All Articles</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'dashboard' %}">Back to dashboard</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
+{% block title %}All Articles{% endblock %}
 
+{% block content %}
+<h1 class="page-title">All Articles</h1>
+<p class="page-intro">
+    Review all submitted articles, open individual records and continue editorial work.
+</p>
+
+<p>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to dashboard</a>
+</p>
+
+<div class="list-panel">
     {% if articles %}
-        <ul>
+        <ul class="item-list">
             {% for article in articles %}
                 <li>
-                    <strong>
-                        <a href="{% url 'admin_article_detail' article.id %}">
-                            {{ article.title }}
-                        </a>
-                    </strong><br>
-
-                    Author: {{ article.author }}<br>
-                    Book: {{ article.book }}<br>
-                    Status: {{ article.get_status_display }}<br>
-                    Created: {{ article.created_at }}
+                    <h3 class="item-title">
+                        <a href="{% url 'admin_article_detail' article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">Author: {{ article.author }}</p>
+                    <p class="item-meta">Book: {{ article.book }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>Created: {{ article.created_at }}</span>
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No articles found.</p>
+        <p class="empty-state">No articles found.</p>
     {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

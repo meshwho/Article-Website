@@ -18,12 +18,31 @@ def my_articles(request):
     articles = Article.objects.filter(author=request.user).order_by('-created_at')
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
 
+    revision_articles = articles.filter(status=Article.STATUS_REVISION_REQUIRED)
+    review_articles = articles.filter(status=Article.STATUS_UNDER_REVIEW)
+    accepted_articles = articles.filter(status=Article.STATUS_ACCEPTED)
+    other_articles = articles.exclude(
+        status__in=[
+            Article.STATUS_REVISION_REQUIRED,
+            Article.STATUS_UNDER_REVIEW,
+            Article.STATUS_ACCEPTED,
+        ]
+    )
+
     return render(
         request,
         'articles/my_articles.html',
         {
             'articles': articles,
             'unread_count': unread_count,
+            'revision_articles': revision_articles,
+            'review_articles': review_articles,
+            'accepted_articles': accepted_articles,
+            'other_articles': other_articles,
+            'total_articles_count': articles.count(),
+            'revision_count': revision_articles.count(),
+            'review_count': review_articles.count(),
+            'accepted_count': accepted_articles.count(),
         }
     )
 

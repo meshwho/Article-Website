@@ -1,20 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Book</title>
-</head>
-<body>
-    <h1>Edit Book Settings</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'book_detail' book.id %}">Back to book</a>
-    </p>
+{% block title %}Edit Book{% endblock %}
 
+{% block content %}
+<h1 class="page-title">Edit Book Settings</h1>
+<p class="page-intro">
+    Update the submission rules and main information for this book.
+</p>
+
+<p>
+    <a href="{% url 'book_detail' book.id %}" class="btn btn-secondary">Back to book</a>
+</p>
+
+<div class="form-panel">
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Save changes</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

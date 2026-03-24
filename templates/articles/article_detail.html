@@ -1,97 +1,102 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>{{ article.title }}</title>
-</head>
-<body>
-    <h1>{{ article.title }}</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'my_articles' %}">Back to my articles</a> |
-        <a href="{% url 'upload_new_version' article.id %}">Upload new version</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
+{% block title %}{{ article.title }}{% endblock %}
 
-    <h3>Article information</h3>
-    <p><strong>Book:</strong> {{ article.book }}</p>
-    <p><strong>Status:</strong> {{ article.get_status_display }}</p>
-    <p><strong>Created:</strong> {{ article.created_at }}</p>
-    <p><strong>Updated:</strong> {{ article.updated_at }}</p>
+{% block content %}
+<h1 class="page-title">{{ article.title }}</h1>
+<p class="page-intro">
+    Review article details, uploaded versions and all reviewer comments.
+</p>
+
+<p>
+    <a href="{% url 'my_articles' %}" class="btn btn-secondary">Back to my articles</a>
+    <a href="{% url 'upload_new_version' article.id %}" class="btn">Upload new version</a>
+</p>
+
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Status</span>
+        <span class="summary-value">{{ article.get_status_display }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Book</span>
+        <span class="summary-value">{{ article.book }}</span>
+    </div>
+</div>
+
+<div class="list-panel">
+    <h2 class="section-title">Article Information</h2>
+    <p class="item-meta"><strong>Created:</strong> {{ article.created_at }}</p>
+    <p class="item-meta"><strong>Updated:</strong> {{ article.updated_at }}</p>
 
     {% if article.abstract %}
-        <p><strong>Abstract:</strong><br>{{ article.abstract }}</p>
+        <p class="card-text">{{ article.abstract }}</p>
     {% endif %}
 
     {% if article.file %}
-        <p><strong>Article file:</strong> <a href="{{ article.file.url }}">Download</a></p>
+        <p><a href="{{ article.file.url }}" class="btn btn-secondary">Download article file</a></p>
     {% endif %}
-    
-    <hr>
+</div>
 
-    <h3>Article Versions</h3>
-    
+<h2 class="section-title">Article Versions</h2>
+<div class="list-panel">
     {% if article.versions.all %}
-        <ul>
+        <ul class="item-list">
             {% for version in article.versions.all %}
                 <li>
-                    <strong>Version {{ version.version_number }}</strong><br>
-                    Uploaded at: {{ version.uploaded_at }}<br>
-                    Uploaded by: {{ version.uploaded_by }}<br>
-    
+                    <h3 class="item-title">Version {{ version.version_number }}</h3>
+                    <p class="item-meta">Uploaded at: {{ version.uploaded_at }}</p>
+                    <p class="item-meta">Uploaded by: {{ version.uploaded_by }}</p>
                     {% if version.comment %}
-                        Comment: {{ version.comment }}<br>
+                        <p class="card-text">{{ version.comment }}</p>
                     {% endif %}
-    
-                    <a href="{{ version.file.url }}">Download version file</a>
+                    <a href="{{ version.file.url }}" class="btn btn-secondary">Download version file</a>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No versions found.</p>
+        <p class="empty-state">No versions found.</p>
     {% endif %}
-    
-    <hr>
-    
-    <h3>Reviews</h3>
+</div>
 
+<h2 class="section-title">Reviews</h2>
+<div class="list-panel">
     {% if article.review_assignments.all %}
-        {% for assignment in article.review_assignments.all %}
-            <div style="margin-bottom: 20px;">
-                <p><strong>Reviewer:</strong> {{ assignment.reviewer }}</p>
-                <p><strong>Assignment status:</strong> {{ assignment.get_status_display }}</p>
+        <ul class="item-list">
+            {% for assignment in article.review_assignments.all %}
+                <li>
+                    <h3 class="item-title">{{ assignment.reviewer }}</h3>
+                    <p class="item-meta">Assignment status: {{ assignment.get_status_display }}</p>
 
-                {% if assignment.reviews.all %}
-                    <p><strong>All reviews from this reviewer:</strong></p>
-                
-                    <ul>
-                        {% for review in assignment.reviews.all %}
-                            <li>
-                                <p><strong>For version:</strong> {{ review.article_version.version_number }}</p>
-                                <p><strong>Recommendation:</strong> {{ review.get_recommendation_display }}</p>
-                                <p><strong>Comment:</strong><br>{{ review.comment|linebreaks }}</p>
-                
-                                {% if review.file %}
-                                    <p>
-                                        <strong>Review file:</strong>
-                                        <a href="{{ review.file.url }}">Download</a>
+                    {% if assignment.reviews.all %}
+                        <ul class="item-list">
+                            {% for review in assignment.reviews.all %}
+                                <li>
+                                    <p class="item-meta">
+                                        <strong>For version:</strong>
+                                        {% if review.article_version %}
+                                            {{ review.article_version.version_number }}
+                                        {% else %}
+                                            old review (version not specified)
+                                        {% endif %}
                                     </p>
-                                {% endif %}
-                
-                                <p><strong>Submitted at:</strong> {{ review.created_at }}</p>
-                            </li>
-                            <br>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>Review has not been submitted yet.</p>
-                {% endif %}
-            </div>
-            <hr>
-        {% endfor %}
+                                    <p class="item-meta"><strong>Recommendation:</strong> {{ review.get_recommendation_display }}</p>
+                                    <div class="card-text">{{ review.comment|linebreaks }}</div>
+                                    {% if review.file %}
+                                        <p><a href="{{ review.file.url }}" class="btn btn-secondary">Download review file</a></p>
+                                    {% endif %}
+                                    <p class="item-meta">Submitted at: {{ review.created_at }}</p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty-state">Review has not been submitted yet.</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
     {% else %}
-        <p>No reviewers assigned yet.</p>
+        <p class="empty-state">No reviewers assigned yet.</p>
     {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

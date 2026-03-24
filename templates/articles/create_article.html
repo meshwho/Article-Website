@@ -1,27 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Create Article</title>
-</head>
-<body>
-    <h1>Create Article</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'choose_book' %}">Back to books</a> |
-        <a href="{% url 'my_articles' %}">Back to my articles</a>
-    </p>
+{% block title %}Create Article{% endblock %}
 
-    <h3>Selected book</h3>
-    <p><strong>Title:</strong> {{ book.title }}</p>
+{% block content %}
+<h1 class="page-title">Create Article</h1>
+<p class="page-intro">
+    Submit your article to the selected book.
+</p>
+
+<div class="form-panel">
+    <p><strong>Book:</strong> {{ book.title }}</p>
     <p><strong>Description:</strong> {{ book.description }}</p>
     <p><strong>Submission deadline:</strong> {{ book.submission_deadline }}</p>
     <p><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
 
+    <hr>
+
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Save article</button>
+        <button type="submit">Submit article</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

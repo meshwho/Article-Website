@@ -1,0 +1,340 @@
+:root {
+    --bg: #f5f1e8;
+    --paper: #fffdf8;
+    --text: #111111;
+    --muted: #666666;
+    --line: #d7d0c5;
+    --accent: #c40000;
+    --accent-dark: #8f0000;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+}
+
+a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+.container {
+    width: min(1120px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.site-header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 0 18px;
+}
+
+.brand-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+}
+
+.brand-subtitle {
+    margin-top: 4px;
+    font-size: 0.92rem;
+    color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.top-nav {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.96rem;
+}
+
+.top-nav a {
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+}
+
+.top-nav a:hover {
+    border-color: var(--accent);
+}
+
+.main-content {
+    padding: 36px 0 60px;
+}
+
+.page-title {
+    margin: 0 0 14px;
+    font-size: 2.5rem;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+}
+
+.page-intro {
+    max-width: 760px;
+    margin: 0 0 28px;
+    color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+}
+
+.section-title {
+    margin: 38px 0 18px;
+    padding-top: 8px;
+    border-top: 2px solid var(--text);
+    font-size: 1.55rem;
+    line-height: 1.2;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 16px 18px;
+    margin-bottom: 28px;
+    padding: 18px 20px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.92rem;
+}
+
+.field label {
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.field input,
+.field select,
+.field textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.btn,
+button,
+input[type="submit"] {
+    display: inline-block;
+    padding: 10px 16px;
+    border: 1px solid var(--text);
+    background: var(--text);
+    color: #ffffff;
+    cursor: pointer;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.92rem;
+    transition: 0.15s ease;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 22px 22px 18px;
+}
+
+.card-title {
+    margin: 0 0 12px;
+    font-size: 1.35rem;
+    line-height: 1.18;
+}
+
+.card-text {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.96rem;
+}
+
+.card-meta {
+    margin: 0 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.92rem;
+}
+
+.card-actions {
+    margin-top: 14px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 26px;
+}
+
+.summary-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 16px 18px;
+}
+
+.summary-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.9rem;
+}
+
+.summary-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+}
+
+.list-panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 20px;
+}
+
+.item-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.item-list li {
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+}
+
+.item-list li:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.item-title {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+}
+
+.item-meta {
+    margin: 0;
+    color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.92rem;
+}
+
+.meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.9rem;
+}
+
+.messages {
+    margin-bottom: 20px;
+}
+
+.message {
+    padding: 12px 14px;
+    background: var(--paper);
+    border-left: 4px solid var(--accent);
+    border-top: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.empty-state {
+    color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.form-panel {
+    max-width: 760px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 24px;
+}
+
+@media (max-width: 760px) {
+    .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+}

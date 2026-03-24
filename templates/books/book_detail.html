@@ -1,113 +1,123 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>{{ book.title }}</title>
-</head>
-<body>
-    <h1>{{ book.title }}</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'admin_books' %}">Back to books</a> |
-        <a href="{% url 'edit_book' book.id %}">Edit book settings</a> |
-        {% if book.submission_mode == 'invitation' %}
-            <a href="{% url 'manage_book_authors' book.id %}">Manage allowed authors</a> |
-        {% endif %}
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
+{% block title %}{{ book.title }}{% endblock %}
 
-    <h3>Book settings</h3>
-    <p><strong>Description:</strong> {{ book.description }}</p>
-    <p><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
-    <p><strong>Submission deadline:</strong> {{ book.submission_deadline }}</p>
-    <p><strong>Created by:</strong> {{ book.created_by }}</p>
-    <p><strong>Created at:</strong> {{ book.created_at }}</p>
+{% block content %}
+<h1 class="page-title">{{ book.title }}</h1>
+<p class="page-intro">
+    Book settings, submission access and all submitted articles in one place.
+</p>
 
-    <hr>
-
+<p>
+    <a href="{% url 'admin_books' %}" class="btn btn-secondary">Back to books</a>
+    <a href="{% url 'edit_book' book.id %}" class="btn btn-secondary">Edit settings</a>
     {% if book.submission_mode == 'invitation' %}
-        <h3>Allowed authors</h3>
-        {% if book.allowed_authors.all %}
-            <ul>
-                {% for author in book.allowed_authors.all %}
-                    <li>{{ author }}</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No allowed authors selected yet.</p>
-        {% endif %}
-        <hr>
+        <a href="{% url 'manage_book_authors' book.id %}" class="btn btn-secondary">Manage allowed authors</a>
     {% endif %}
+</p>
 
-    <h3>Articles in this book</h3>
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Submission mode</span>
+        <span class="summary-value">{{ book.get_submission_mode_display }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Deadline</span>
+        <span class="summary-value">{{ book.submission_deadline }}</span>
+    </div>
+</div>
 
-    <form method="get">
-        <p>
-            <label for="status">Filter by status:</label>
-            <select name="status" id="status">
-                <option value="">All statuses</option>
-                {% for value, label in status_choices %}
-                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </p>
-    
-        <p>
-            <label for="author">Filter by author:</label>
-            <select name="author" id="author">
-                <option value="">All authors</option>
-                {% for author in author_choices %}
-                    <option value="{{ author.id }}" {% if selected_author == author.id|stringformat:"s" %}selected{% endif %}>
-                        {{ author.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </p>
-    
-        <p>
-            <label for="reviewer_filter">Filter by reviewer assignment:</label>
-            <select name="reviewer_filter" id="reviewer_filter">
-                <option value="">All articles</option>
-                <option value="with_reviewer" {% if selected_reviewer_filter == 'with_reviewer' %}selected{% endif %}>
-                    With reviewer
-                </option>
-                <option value="without_reviewer" {% if selected_reviewer_filter == 'without_reviewer' %}selected{% endif %}>
-                    Without reviewer
-                </option>
-            </select>
-        </p>
-    
-        <button type="submit">Apply filters</button>
-        <a href="{% url 'book_detail' book.id %}">Reset</a>
-    </form>
-    
-    <br>
-    
-    {% if articles %}
-        <ul>
-            {% for article in articles %}
+<div class="list-panel">
+    <h2 class="section-title">Book Information</h2>
+    <p class="item-meta"><strong>Created by:</strong> {{ book.created_by }}</p>
+    <p class="item-meta"><strong>Created at:</strong> {{ book.created_at }}</p>
+    {% if book.description %}
+        <p class="card-text">{{ book.description }}</p>
+    {% endif %}
+</div>
+
+{% if book.submission_mode == 'invitation' %}
+<h2 class="section-title">Allowed Authors</h2>
+<div class="list-panel">
+    {% if book.allowed_authors.all %}
+        <ul class="item-list">
+            {% for author in book.allowed_authors.all %}
                 <li>
-                    <strong>
-                        <a href="{% url 'book_article_detail' book.id article.id %}">
-                            {{ article.title }}
-                        </a>
-                    </strong><br>
-                    Author: {{ article.author }}<br>
-                    Status: {{ article.get_status_display }}<br>
-                    Reviewer assigned:
-                    {% if article.review_assignments.all %}
-                        Yes
-                    {% else %}
-                        No
-                    {% endif %}
+                    <h3 class="item-title">{{ author }}</h3>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No articles found for selected filters.</p>
+        <p class="empty-state">No allowed authors selected yet.</p>
     {% endif %}
-</body>
-</html>
+</div>
+{% endif %}
+
+<h2 class="section-title">Articles in this Book</h2>
+
+<form method="get" class="toolbar">
+    <div class="field">
+        <label for="status">Filter by status</label>
+        <select name="status" id="status">
+            <option value="">All statuses</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="field">
+        <label for="author">Filter by author</label>
+        <select name="author" id="author">
+            <option value="">All authors</option>
+            {% for author in author_choices %}
+                <option value="{{ author.id }}" {% if selected_author == author.id|stringformat:"s" %}selected{% endif %}>
+                    {{ author.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="field">
+        <label for="reviewer_filter">Reviewer assignment</label>
+        <select name="reviewer_filter" id="reviewer_filter">
+            <option value="">All articles</option>
+            <option value="with_reviewer" {% if selected_reviewer_filter == 'with_reviewer' %}selected{% endif %}>With reviewer</option>
+            <option value="without_reviewer" {% if selected_reviewer_filter == 'without_reviewer' %}selected{% endif %}>Without reviewer</option>
+        </select>
+    </div>
+
+    <div>
+        <button type="submit">Apply</button>
+        <a href="{% url 'book_detail' book.id %}" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+<div class="list-panel">
+    {% if articles %}
+        <ul class="item-list">
+            {% for article in articles %}
+                <li>
+                    <h3 class="item-title">
+                        <a href="{% url 'book_article_detail' book.id article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">{{ article.author }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>
+                            Reviewer assigned:
+                            {% if article.review_assignments.all %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-state">No articles found for selected filters.</p>
+    {% endif %}
+</div>
+{% endblock %}

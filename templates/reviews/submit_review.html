@@ -1,28 +1,36 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Submit Review</title>
-</head>
-<body>
-    <h1>Submit Review</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'reviewer_assignments' %}">Back to assignments</a>
-    </p>
+{% block title %}All Articles{% endblock %}
 
-    <h3>{{ assignment.article.title }}</h3>
-    <p>Book: {{ assignment.article.book }}</p>
-    <p>Author: {{ assignment.article.author }}</p>
+{% block content %}
+<h1 class="page-title">All Articles</h1>
+<p class="page-intro">
+    Review all submitted articles, open individual records and continue editorial work.
+</p>
 
-    {% if assignment.article.file %}
-        <p><a href="{{ assignment.article.file.url }}">Download article file</a></p>
+<p>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to dashboard</a>
+</p>
+
+<div class="list-panel">
+    {% if articles %}
+        <ul class="item-list">
+            {% for article in articles %}
+                <li>
+                    <h3 class="item-title">
+                        <a href="{% url 'admin_article_detail' article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">Author: {{ article.author }}</p>
+                    <p class="item-meta">Book: {{ article.book }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>Created: {{ article.created_at }}</span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-state">No articles found.</p>
     {% endif %}
-
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit review</button>
-    </form>
-</body>
-</html>
+</div>
+{% endblock %}

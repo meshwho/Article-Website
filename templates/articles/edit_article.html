@@ -1,22 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Article</title>
-</head>
-<body>
-    <h1>Edit Article</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'article_detail' article.id %}">Back to article</a>
-    </p>
+{% block title %}Edit Article{% endblock %}
 
-    <p><strong>Book:</strong> {{ article.book }}</p>
+{% block content %}
+<h1 class="page-title">Edit Article</h1>
+<p class="page-intro">
+    Update the article title, abstract or file before the next review round.
+</p>
+
+<p>
+    <a href="{% url 'article_detail' article.id %}" class="btn btn-secondary">Back to article</a>
+</p>
+
+<div class="form-panel">
+    <p class="item-meta"><strong>Book:</strong> {{ article.book }}</p>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Save changes</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

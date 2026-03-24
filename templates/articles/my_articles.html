@@ -1,98 +1,121 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>My Articles</title>
-</head>
-<body>
-    <h1>My Articles</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'my_notifications' %}">Notifications ({{ unread_count }})</a> |
-        <a href="{% url 'choose_book' %}">Add new article</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
+{% block title %}My Articles{% endblock %}
 
-    <h3>Summary</h3>
-    <p>Total articles: <strong>{{ total_articles_count }}</strong></p>
-    <p>Requires revision: <strong>{{ revision_count }}</strong></p>
-    <p>Under review: <strong>{{ review_count }}</strong></p>
-    <p>Accepted: <strong>{{ accepted_count }}</strong></p>
+{% block content %}
+<h1 class="page-title">My Articles</h1>
+<p class="page-intro">
+    Track your submissions, revisions and accepted papers in one place.
+</p>
 
-    <hr>
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Total articles</span>
+        <span class="summary-value">{{ total_articles_count }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Requires revision</span>
+        <span class="summary-value">{{ revision_count }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Under review</span>
+        <span class="summary-value">{{ review_count }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Accepted</span>
+        <span class="summary-value">{{ accepted_count }}</span>
+    </div>
+</div>
 
-    <h3>Requires revision</h3>
+<p>
+    <a href="{% url 'choose_book' %}" class="btn">Add new article</a>
+</p>
+
+<h2 class="section-title">Requires Revision</h2>
+<div class="list-panel">
     {% if revision_articles %}
-        <ul>
+        <ul class="item-list">
             {% for article in revision_articles %}
                 <li>
-                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
-                    Book: {{ article.book }}<br>
-                    Status: {{ article.get_status_display }}<br>
-                    Updated: {{ article.updated_at }}
+                    <h3 class="item-title">
+                        <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">{{ article.book }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>Updated: {{ article.updated_at }}</span>
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No articles require revision.</p>
+        <p class="empty-state">No articles require revision.</p>
     {% endif %}
+</div>
 
-    <hr>
-
-    <h3>Under review</h3>
+<h2 class="section-title">Under Review</h2>
+<div class="list-panel">
     {% if review_articles %}
-        <ul>
+        <ul class="item-list">
             {% for article in review_articles %}
                 <li>
-                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
-                    Book: {{ article.book }}<br>
-                    Status: {{ article.get_status_display }}<br>
-                    Updated: {{ article.updated_at }}
+                    <h3 class="item-title">
+                        <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">{{ article.book }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>Updated: {{ article.updated_at }}</span>
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No articles are currently under review.</p>
+        <p class="empty-state">No articles are currently under review.</p>
     {% endif %}
+</div>
 
-    <hr>
-
-    <h3>Accepted</h3>
+<h2 class="section-title">Accepted</h2>
+<div class="list-panel">
     {% if accepted_articles %}
-        <ul>
+        <ul class="item-list">
             {% for article in accepted_articles %}
                 <li>
-                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
-                    Book: {{ article.book }}<br>
-                    Status: {{ article.get_status_display }}<br>
-                    Updated: {{ article.updated_at }}
+                    <h3 class="item-title">
+                        <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">{{ article.book }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>Updated: {{ article.updated_at }}</span>
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No accepted articles yet.</p>
+        <p class="empty-state">No accepted articles yet.</p>
     {% endif %}
+</div>
 
-    <hr>
-
-    <h3>Other</h3>
+<h2 class="section-title">Other</h2>
+<div class="list-panel">
     {% if other_articles %}
-        <ul>
+        <ul class="item-list">
             {% for article in other_articles %}
                 <li>
-                    <strong><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></strong><br>
-                    Book: {{ article.book }}<br>
-                    Status: {{ article.get_status_display }}<br>
-                    Updated: {{ article.updated_at }}
+                    <h3 class="item-title">
+                        <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">{{ article.book }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>Updated: {{ article.updated_at }}</span>
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No other articles.</p>
+        <p class="empty-state">No other articles.</p>
     {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

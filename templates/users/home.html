@@ -1,20 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Welcome</title>
-</head>
-<body>
-    <h1>Welcome to the Articles Platform</h1>
+{% extends "base.html" %}
 
-    <p>Please choose one of the options below:</p>
+{% block title %}Welcome{% endblock %}
 
-    <p>
-        <a href="{% url 'login' %}">Login</a>
-    </p>
+{% block content %}
+<h1 class="page-title">Article Platform</h1>
+<p class="page-intro">
+    A structured editorial workspace for authors, reviewers and administrators.
+    Submit articles, manage review rounds and track the full publication process.
+</p>
 
-    <p>
-        <a href="{% url 'register' %}">Register</a>
-    </p>
-</body>
-</html>
+<div class="cards">
+    <article class="card">
+        <div class="badge">Access</div>
+        <h2 class="card-title"><a href="{% url 'login' %}">Login</a></h2>
+        <p class="card-text">
+            Sign in to continue working with articles, books and reviews.
+        </p>
+        <div class="card-actions">
+            <a href="{% url 'login' %}" class="btn">Go to login</a>
+        </div>
+    </article>
+
+    <article class="card">
+        <div class="badge">New account</div>
+        <h2 class="card-title"><a href="{% url 'register' %}">Register</a></h2>
+        <p class="card-text">
+            Create an account as an author or reviewer and join the workflow.
+        </p>
+        <div class="card-actions">
+            <a href="{% url 'register' %}" class="btn">Create account</a>
+        </div>
+    </article>
+</div>
+{% endblock %}

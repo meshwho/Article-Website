@@ -1,80 +1,97 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Choose Book</title>
-</head>
-<body>
-    <h1>Choose a Book</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'my_notifications' %}">Notifications ({{ unread_count }})</a> |
-        <a href="{% url 'my_articles' %}">Back to my articles</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
+{% block title %}Choose a Book{% endblock %}
 
-    <form method="get">
-        <p>
-            <label for="q">Search by title:</label>
-            <input type="text" name="q" id="q" value="{{ search_query }}">
-        </p>
+{% block content %}
+<h1 class="page-title">Choose a Book</h1>
+<p class="page-intro">
+    Select the collection where you want to submit your article.
+    Books are divided into open calls and invitation-only collections.
+</p>
 
-        <p>
-            <label for="creator">Filter by creator:</label>
-            <select name="creator" id="creator">
-                <option value="">All creators</option>
-                {% for creator in creators %}
-                    <option value="{{ creator.id }}" {% if selected_creator == creator.id|stringformat:"s" %}selected{% endif %}>
-                        {{ creator.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </p>
+<form method="get" class="toolbar">
+    <div class="field">
+        <label for="q">Search by title</label>
+        <input type="text" name="q" id="q" value="{{ search_query }}">
+    </div>
 
+    <div class="field">
+        <label for="creator">Filter by creator</label>
+        <select name="creator" id="creator">
+            <option value="">All creators</option>
+            {% for creator in creators %}
+                <option value="{{ creator.id }}" {% if selected_creator == creator.id|stringformat:"s" %}selected{% endif %}>
+                    {{ creator.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
         <button type="submit">Apply</button>
-        <a href="{% url 'choose_book' %}">Reset</a>
-    </form>
+        <a href="{% url 'choose_book' %}" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
 
-    <hr>
+<h2 class="section-title">Open Books</h2>
+{% if open_books %}
+    <div class="cards">
+        {% for book in open_books %}
+            <article class="card">
+                <div class="badge">Open</div>
+                <h3 class="card-title">
+                    <a href="{% url 'create_article' book.id %}">{{ book.title }}</a>
+                </h3>
 
-    <h2>Open books (all authors can submit)</h2>
-    {% if open_books %}
-        <ul>
-            {% for book in open_books %}
-                <li>
-                    <strong>
-                        <a href="{% url 'create_article' book.id %}">{{ book.title }}</a>
-                    </strong><br>
-                    Description: {{ book.description }}<br>
-                    Deadline: {{ book.submission_deadline }}<br>
-                    Created by: {{ book.created_by }}
-                </li>
-                <br>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No open books found.</p>
-    {% endif %}
+                <p class="card-text">
+                    {% if book.description %}
+                        {{ book.description }}
+                    {% else %}
+                        No description available.
+                    {% endif %}
+                </p>
 
-    <hr>
+                <p class="card-meta"><strong>Deadline:</strong> {{ book.submission_deadline }}</p>
+                <p class="card-meta"><strong>Created by:</strong> {{ book.created_by }}</p>
 
-    <h2>Invitation books</h2>
-    {% if invitation_books %}
-        <ul>
-            {% for book in invitation_books %}
-                <li>
-                    <strong>
-                        <a href="{% url 'create_article' book.id %}">{{ book.title }}</a>
-                    </strong><br>
-                    Description: {{ book.description }}<br>
-                    Deadline: {{ book.submission_deadline }}<br>
-                    Created by: {{ book.created_by }}
-                </li>
-                <br>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No invitation books found.</p>
-    {% endif %}
-</body>
-</html>
+                <div class="card-actions">
+                    <a href="{% url 'create_article' book.id %}" class="btn">Submit to this book</a>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="empty-state">No open books found.</p>
+{% endif %}
+
+<h2 class="section-title">Invitation Books</h2>
+{% if invitation_books %}
+    <div class="cards">
+        {% for book in invitation_books %}
+            <article class="card">
+                <div class="badge">Invitation</div>
+                <h3 class="card-title">
+                    <a href="{% url 'create_article' book.id %}">{{ book.title }}</a>
+                </h3>
+
+                <p class="card-text">
+                    {% if book.description %}
+                        {{ book.description }}
+                    {% else %}
+                        No description available.
+                    {% endif %}
+                </p>
+
+                <p class="card-meta"><strong>Deadline:</strong> {{ book.submission_deadline }}</p>
+                <p class="card-meta"><strong>Created by:</strong> {{ book.created_by }}</p>
+
+                <div class="card-actions">
+                    <a href="{% url 'create_article' book.id %}" class="btn">Submit to this book</a>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="empty-state">No invitation books found.</p>
+{% endif %}
+{% endblock %}

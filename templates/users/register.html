@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Register</title>
-</head>
-<body>
-    <h1>Register</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'home' %}">Back to home</a>
-    </p>
+{% block title %}Register{% endblock %}
 
+{% block content %}
+<h1 class="page-title">Register</h1>
+<p class="page-intro">
+    Create an account to participate in the editorial process.
+</p>
+
+<div class="form-panel">
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Create account</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

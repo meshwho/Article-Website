@@ -1,54 +1,61 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>My Notifications</title>
-</head>
-<body>
-    <h1>My Notifications</h1>
+{% extends "base.html" %}
 
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Notifications</h1>
+<p class="page-intro">
+    Review recent updates and unread events across the platform.
+</p>
+
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Unread notifications</span>
+        <span class="summary-value">{{ unread_count }}</span>
+    </div>
+</div>
+
+{% if unread_count > 0 %}
     <p>
-        <a href="{% url 'dashboard' %}">Back to dashboard</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
+        <a href="{% url 'mark_all_notifications_read' %}" class="btn">Mark all as read</a>
     </p>
+{% endif %}
 
-    <p>
-        Unread notifications: <strong>{{ unread_count }}</strong>
-        {% if unread_count > 0 %}
-            | <a href="{% url 'mark_all_notifications_read' %}">Mark all as read</a>
-        {% endif %}
-    </p>
-
+<div class="list-panel">
     {% if notifications %}
-        <ul>
+        <ul class="item-list">
             {% for notification in notifications %}
                 <li>
-                    {% if not notification.is_read %}
-                        <strong>[NEW]</strong>
-                    {% endif %}
+                    <h3 class="item-title">
+                        {% if not notification.is_read %}
+                            <span class="badge">New</span>
+                        {% endif %}
+                        {{ notification.title }}
+                    </h3>
 
-                    <strong>{{ notification.title }}</strong><br>
-                    {{ notification.message }}<br>
-                    Created: {{ notification.created_at }}<br>
-                    Status:
-                    {% if notification.is_read %}
-                        Read
-                    {% else %}
-                        Unread
-                    {% endif %}
-                    <br>
+                    <div class="card-text">{{ notification.message }}</div>
 
-                    {% if not notification.is_read %}
-                        <a href="{% url 'mark_notification_read' notification.id %}">Open</a>
-                    {% elif notification.link %}
-                        <a href="{{ notification.link }}">Open link</a>
-                    {% endif %}
+                    <div class="meta-row">
+                        <span>Created: {{ notification.created_at }}</span>
+                        <span>Status: {% if notification.is_read %}Read{% else %}Unread{% endif %}</span>
+                    </div>
+
+                    <div class="card-actions">
+                        {% if not notification.is_read %}
+                            <a href="{% url 'mark_notification_read' notification.id %}" class="btn">
+                                Open
+                            </a>
+                        {% elif notification.link %}
+                            <a href="{{ notification.link }}" class="btn btn-secondary">
+                                Open link
+                            </a>
+                        {% endif %}
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No notifications yet.</p>
+        <p class="empty-state">No notifications yet.</p>
     {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

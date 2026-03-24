@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
-    <h1>Login</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'home' %}">Back to home</a>
-    </p>
+{% block title %}Login{% endblock %}
 
+{% block content %}
+<h1 class="page-title">Login</h1>
+<p class="page-intro">
+    Enter your credentials to access your dashboard.
+</p>
+
+<div class="form-panel">
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Sign in</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

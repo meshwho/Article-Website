@@ -1,98 +1,83 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Reviewer Articles</title>
-</head>
-<body>
-    <h1>My Assigned Articles</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'my_notifications' %}">Notifications ({{ unread_count }})</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
+{% block title %}Reviewer Articles{% endblock %}
 
-    <h3>Summary</h3>
-    <p>Total assignments: <strong>{{ total_assignments_count }}</strong></p>
-    <p>Waiting for your review: <strong>{{ waiting_count }}</strong></p>
-    <p>Latest version already reviewed: <strong>{{ reviewed_count }}</strong></p>
+{% block content %}
+<h1 class="page-title">My Assigned Articles</h1>
+<p class="page-intro">
+    Review queue, latest versions and your current workload.
+</p>
 
-    <hr>
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Total assignments</span>
+        <span class="summary-value">{{ total_assignments_count }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Waiting for review</span>
+        <span class="summary-value">{{ waiting_count }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Latest version reviewed</span>
+        <span class="summary-value">{{ reviewed_count }}</span>
+    </div>
+</div>
 
-    <h3>Waiting for your review</h3>
+<h2 class="section-title">Waiting for Your Review</h2>
+<div class="list-panel">
     {% if waiting_for_review %}
-        <ul>
+        <ul class="item-list">
             {% for assignment in waiting_for_review %}
                 <li>
-                    <strong>
+                    <h3 class="item-title">
                         <a href="{% url 'reviewer_article_detail' assignment.id %}">
                             {{ assignment.article.title }}
                         </a>
-                    </strong><br>
-
-                    Book: {{ assignment.article.book }}<br>
-                    Author: {{ assignment.article.author }}<br>
-                    Article status: {{ assignment.article.get_status_display }}<br>
-                    Assignment status: {{ assignment.get_status_display }}<br>
-
-                    {% if assignment.latest_version %}
-                        Latest version: {{ assignment.latest_version.version_number }} ({{ assignment.latest_version.uploaded_at }})<br>
-                    {% endif %}
-
-                    {% if assignment.latest_reviewed_version %}
-                        Your latest reviewed version:
-                        {% if assignment.latest_reviewed_version.article_version %}
-                            {{ assignment.latest_reviewed_version.article_version.version_number }}
-                        {% else %}
-                            old review (version not specified)
+                    </h3>
+                    <p class="item-meta">
+                        {{ assignment.article.book }} — {{ assignment.article.author }}
+                    </p>
+                    <div class="meta-row">
+                        <span>Article status: {{ assignment.article.get_status_display }}</span>
+                        <span>Assignment status: {{ assignment.get_status_display }}</span>
+                        {% if assignment.latest_version %}
+                            <span>Latest version: {{ assignment.latest_version.version_number }}</span>
                         {% endif %}
-                    {% else %}
-                        You have not reviewed this article yet.
-                    {% endif %}
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No articles are waiting for your review.</p>
+        <p class="empty-state">No articles are waiting for your review.</p>
     {% endif %}
+</div>
 
-    <hr>
-
-    <h3>Latest version already reviewed</h3>
+<h2 class="section-title">Latest Version Already Reviewed</h2>
+<div class="list-panel">
     {% if already_reviewed_latest %}
-        <ul>
+        <ul class="item-list">
             {% for assignment in already_reviewed_latest %}
                 <li>
-                    <strong>
+                    <h3 class="item-title">
                         <a href="{% url 'reviewer_article_detail' assignment.id %}">
                             {{ assignment.article.title }}
                         </a>
-                    </strong><br>
-
-                    Book: {{ assignment.article.book }}<br>
-                    Author: {{ assignment.article.author }}<br>
-                    Article status: {{ assignment.article.get_status_display }}<br>
-                    Assignment status: {{ assignment.get_status_display }}<br>
-
-                    {% if assignment.latest_version %}
-                        Latest version: {{ assignment.latest_version.version_number }} ({{ assignment.latest_version.uploaded_at }})<br>
-                    {% endif %}
-
-                    {% if assignment.latest_reviewed_version %}
-                        Your latest reviewed version:
-                        {% if assignment.latest_reviewed_version.article_version %}
-                            {{ assignment.latest_reviewed_version.article_version.version_number }}
-                        {% else %}
-                            old review (version not specified)
+                    </h3>
+                    <p class="item-meta">
+                        {{ assignment.article.book }} — {{ assignment.article.author }}
+                    </p>
+                    <div class="meta-row">
+                        <span>Article status: {{ assignment.article.get_status_display }}</span>
+                        <span>Assignment status: {{ assignment.get_status_display }}</span>
+                        {% if assignment.latest_version %}
+                            <span>Latest version: {{ assignment.latest_version.version_number }}</span>
                         {% endif %}
-                    {% endif %}
+                    </div>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No fully reviewed assignments yet.</p>
+        <p class="empty-state">No fully reviewed assignments yet.</p>
     {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

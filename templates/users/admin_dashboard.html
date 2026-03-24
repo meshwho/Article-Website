@@ -1,20 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-</head>
-<body>
-    <h1>Admin Dashboard</h1>
+{% extends "base.html" %}
 
-    <p>You are logged in as admin.</p>
+{% block title %}Admin Dashboard{% endblock %}
 
-    <p>
-        <a href="{% url 'my_notifications' %}">Notifications ({{ unread_count }})</a> |
-        <a href="{% url 'admin_books' %}">Manage books</a> |
-        <a href="{% url 'admin_articles' %}">Manage articles</a> |
-        <a href="/admin/">Open Django admin</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
-</body>
-</html>
+{% block content %}
+<h1 class="page-title">Admin Dashboard</h1>
+<p class="page-intro">
+    Manage books, submitted articles and the overall editorial workflow.
+</p>
+
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Notifications</span>
+        <span class="summary-value">{{ unread_count }}</span>
+    </div>
+</div>
+
+<div class="cards">
+    <article class="card">
+        <div class="badge">Books</div>
+        <h2 class="card-title"><a href="{% url 'admin_books' %}">Manage books</a></h2>
+        <p class="card-text">Create, edit and configure submission settings for books.</p>
+        <div class="card-actions">
+            <a href="{% url 'admin_books' %}" class="btn">Open books</a>
+        </div>
+    </article>
+
+    <article class="card">
+        <div class="badge">Articles</div>
+        <h2 class="card-title"><a href="{% url 'admin_articles' %}">Manage articles</a></h2>
+        <p class="card-text">Review submitted articles, assign reviewers and monitor progress.</p>
+        <div class="card-actions">
+            <a href="{% url 'admin_articles' %}" class="btn">Open articles</a>
+        </div>
+    </article>
+
+    <article class="card">
+        <div class="badge">System</div>
+        <h2 class="card-title"><a href="/admin/">Open Django admin</a></h2>
+        <p class="card-text">Access the full Django administration interface.</p>
+        <div class="card-actions">
+            <a href="/admin/" class="btn">Open admin</a>
+        </div>
+    </article>
+</div>
+{% endblock %}

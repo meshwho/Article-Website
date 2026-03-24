@@ -1,27 +1,33 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Manage Allowed Authors</title>
-</head>
-<body>
-    <h1>Manage Allowed Authors</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'book_detail' book.id %}">Back to book</a>
-    </p>
+{% block title %}Manage Allowed Authors{% endblock %}
 
-    <p><strong>Book:</strong> {{ book.title }}</p>
-    <p><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
+{% block content %}
+<h1 class="page-title">Manage Allowed Authors</h1>
+<p class="page-intro">
+    Select the authors who may submit articles to this invitation-only book.
+</p>
 
-    {% if book.submission_mode == 'invitation' %}
+<p>
+    <a href="{% url 'book_detail' book.id %}" class="btn btn-secondary">Back to book</a>
+</p>
+
+<div class="list-panel">
+    <p class="item-meta"><strong>Book:</strong> {{ book.title }}</p>
+    <p class="item-meta"><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
+</div>
+
+{% if book.submission_mode == 'invitation' %}
+    <div class="form-panel">
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit">Save allowed authors</button>
         </form>
-    {% else %}
-        <p>This book is open to all authors. Invitation list is not used.</p>
-    {% endif %}
-</body>
-</html>
+    </div>
+{% else %}
+    <div class="list-panel">
+        <p class="empty-state">This book is open to all authors. Invitation list is not used.</p>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,35 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>{{ article.title }}</title>
-</head>
-<body>
-    <h1>{{ article.title }}</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'reviewer_assignments' %}">Back to all assigned articles</a> |
-        <a href="{% url 'my_notifications' %}">Notifications</a> |
-        <a href="{% url 'custom_logout' %}">Logout</a>
-    </p>
+{% block title %}{{ article.title }}{% endblock %}
 
-    <h3>Article information</h3>
-    <p><strong>Book:</strong> {{ article.book }}</p>
-    <p><strong>Author:</strong> {{ article.author }}</p>
-    <p><strong>Status:</strong> {{ article.get_status_display }}</p>
-    <p><strong>Created:</strong> {{ article.created_at }}</p>
-    <p><strong>Updated:</strong> {{ article.updated_at }}</p>
+{% block content %}
+<h1 class="page-title">{{ article.title }}</h1>
+<p class="page-intro">
+    Review article versions, previous comments and submit a new review.
+</p>
+
+<p>
+    <a href="{% url 'reviewer_assignments' %}" class="btn btn-secondary">Back to assignments</a>
+</p>
+
+<div class="summary-grid">
+    <div class="summary-box">
+        <span class="summary-label">Article status</span>
+        <span class="summary-value">{{ article.get_status_display }}</span>
+    </div>
+    <div class="summary-box">
+        <span class="summary-label">Book</span>
+        <span class="summary-value">{{ article.book }}</span>
+    </div>
+</div>
+
+<div class="list-panel">
+    <h2 class="section-title">Article Information</h2>
+    <p class="item-meta"><strong>Author:</strong> {{ article.author }}</p>
+    <p class="item-meta"><strong>Created:</strong> {{ article.created_at }}</p>
+    <p class="item-meta"><strong>Updated:</strong> {{ article.updated_at }}</p>
 
     {% if article.abstract %}
-        <p><strong>Abstract:</strong><br>{{ article.abstract }}</p>
+        <p class="card-text">{{ article.abstract }}</p>
     {% endif %}
 
     {% if article.file %}
-        <p><strong>Current article file:</strong> <a href="{{ article.file.url }}">Download</a></p>
+        <p><a href="{{ article.file.url }}" class="btn btn-secondary">Download current article file</a></p>
     {% endif %}
-    
+
     {% with latest_version=article.versions.first latest_review=assignment.reviews.first %}
-        <p>
+        <p class="item-meta">
             <strong>Review status for latest version:</strong>
             {% if latest_version and latest_review and latest_review.article_version and latest_review.article_version.id == latest_version.id %}
                 Latest version already reviewed
@@ -38,64 +47,63 @@
             {% endif %}
         </p>
     {% endwith %}
+</div>
 
-    <hr>
-
-    <h3>Article version history</h3>
+<h2 class="section-title">Article Version History</h2>
+<div class="list-panel">
     {% if article.versions.all %}
-        <ul>
+        <ul class="item-list">
             {% for version in article.versions.all %}
                 <li>
-                    <strong>Version {{ version.version_number }}</strong><br>
-                    Uploaded at: {{ version.uploaded_at }}<br>
-                    Uploaded by: {{ version.uploaded_by }}<br>
-
+                    <h3 class="item-title">Version {{ version.version_number }}</h3>
+                    <p class="item-meta">Uploaded at: {{ version.uploaded_at }}</p>
+                    <p class="item-meta">Uploaded by: {{ version.uploaded_by }}</p>
                     {% if version.comment %}
-                        Author comment: {{ version.comment }}<br>
+                        <p class="card-text">{{ version.comment }}</p>
                     {% endif %}
-
-                    <a href="{{ version.file.url }}">Download this version</a>
+                    <a href="{{ version.file.url }}" class="btn btn-secondary">Download this version</a>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No versions found.</p>
+        <p class="empty-state">No versions found.</p>
     {% endif %}
+</div>
 
-    <hr>
-
-    <h3>Review history</h3>
+<h2 class="section-title">Review History</h2>
+<div class="list-panel">
     {% if assignment.reviews.all %}
-        <ul>
+        <ul class="item-list">
             {% for review in assignment.reviews.all %}
                 <li>
-                    <strong>For version:</strong> {{ review.article_version.version_number }}<br>
-                    <strong>Recommendation:</strong> {{ review.get_recommendation_display }}<br>
-                    <strong>Comment:</strong><br>
-                    {{ review.comment|linebreaks }}<br>
-    
+                    <p class="item-meta">
+                        <strong>For version:</strong>
+                        {% if review.article_version %}
+                            {{ review.article_version.version_number }}
+                        {% else %}
+                            old review (version not specified)
+                        {% endif %}
+                    </p>
+                    <p class="item-meta"><strong>Recommendation:</strong> {{ review.get_recommendation_display }}</p>
+                    <div class="card-text">{{ review.comment|linebreaks }}</div>
                     {% if review.file %}
-                        <strong>Review file:</strong>
-                        <a href="{{ review.file.url }}">Download</a><br>
+                        <p><a href="{{ review.file.url }}" class="btn btn-secondary">Download review file</a></p>
                     {% endif %}
-    
-                    <strong>Submitted at:</strong> {{ review.created_at }}
+                    <p class="item-meta">Submitted at: {{ review.created_at }}</p>
                 </li>
-                <br>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No reviews submitted yet.</p>
+        <p class="empty-state">No reviews submitted yet.</p>
     {% endif %}
+</div>
 
-    <hr>
-
-    <h3>Submit new review</h3>
+<h2 class="section-title">Submit New Review</h2>
+<div class="form-panel">
     <form method="post" action="{% url 'submit_review' assignment.id %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Submit review</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

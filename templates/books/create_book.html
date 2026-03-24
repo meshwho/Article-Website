@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Create Book</title>
-</head>
-<body>
-    <h1>Create Book</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'admin_books' %}">Back to books</a>
-    </p>
+{% block title %}Create Book{% endblock %}
 
+{% block content %}
+<h1 class="page-title">Create Book</h1>
+<p class="page-intro">
+    Set up a new submission collection with its deadline and access mode.
+</p>
+
+<div class="form-panel">
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Create book</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}
