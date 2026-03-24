@@ -13,7 +13,16 @@ from reviews.models import ReviewAssignment
 from django.urls import reverse
 from notifications.models import Notification
 
+from io import BytesIO
+from pathlib import Path
+import zipfile
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import models
+from django.http import FileResponse, Http404, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
 
 @login_required
 @role_required(['admin'])
@@ -64,7 +73,7 @@ def book_detail(request, book_id):
         id=book_id
     )
 
-    articles = book.articles.select_related('author').prefetch_related('review_assignments').all().order_by('-created_at')
+    articles = get_filtered_book_articles(book, request)
 
     selected_status = request.GET.get('status', '')
     selected_author = request.GET.get('author', '')
@@ -274,4 +283,93 @@ def delete_book(request, book_id):
         request,
         'books/delete_book.html',
         {'book': book}
+    )
+
+
+def get_filtered_book_articles(book, request):
+    articles = book.articles.select_related('author').prefetch_related('review_assignments', 'versions').all().order_by('-created_at')
+
+    selected_status = request.GET.get('status', '')
+    selected_author = request.GET.get('author', '')
+    selected_reviewer_filter = request.GET.get('reviewer_filter', '')
+
+    if selected_status:
+        articles = articles.filter(status=selected_status)
+
+    if selected_author:
+        articles = articles.filter(author_id=selected_author)
+
+    if selected_reviewer_filter == 'with_reviewer':
+        articles = articles.filter(review_assignments__isnull=False).distinct()
+    elif selected_reviewer_filter == 'without_reviewer':
+        articles = articles.filter(review_assignments__isnull=True)
+
+    return articles
+
+@login_required
+@role_required(['admin'])
+def download_book_articles(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    articles = get_filtered_book_articles(book, request)
+
+    buffer = BytesIO()
+
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
+        used_names = {}
+
+        for article in articles:
+            latest_version = article.versions.first()
+
+            if latest_version and latest_version.file:
+                file_field = latest_version.file
+            elif article.file:
+                file_field = article.file
+            else:
+                continue
+
+            original_name = Path(file_field.name).name
+            suffix = Path(original_name).suffix or ''
+            safe_title = slugify(article.title) or f'article-{article.id}'
+            filename = f'{safe_title}{suffix}'
+
+            if filename in used_names:
+                used_names[filename] += 1
+                filename = f'{safe_title}-{used_names[filename]}{suffix}'
+            else:
+                used_names[filename] = 1
+
+            file_field.open('rb')
+            archive.writestr(filename, file_field.read())
+            file_field.close()
+
+    buffer.seek(0)
+
+    zip_name = f'{slugify(book.title) or "book"}-articles.zip'
+    response = HttpResponse(buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{zip_name}"'
+    return response
+
+
+@login_required
+@role_required(['admin'])
+def download_article_latest_version(request, book_id, article_id):
+    article = get_object_or_404(
+        Article.objects.prefetch_related('versions').select_related('book'),
+        id=article_id,
+        book_id=book_id
+    )
+
+    latest_version = article.versions.first()
+
+    if latest_version and latest_version.file:
+        file_field = latest_version.file
+    elif article.file:
+        file_field = article.file
+    else:
+        raise Http404('No file found for this article.')
+
+    return FileResponse(
+        file_field.open('rb'),
+        as_attachment=True,
+        filename=Path(file_field.name).name
     )

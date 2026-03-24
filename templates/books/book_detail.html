@@ -76,6 +76,10 @@
     <div class="toolbar-actions">
         <button type="submit">Apply</button>
         <a href="{% url 'book_detail' book.id %}" class="btn btn-secondary">Reset</a>
+        <a href="{% url 'download_book_articles' book.id %}?status={{ selected_status }}&author={{ selected_author }}&reviewer_filter={{ selected_reviewer_filter }}"
+           class="btn btn-secondary">
+            Download all
+        </a>
     </div>
 </form>
 
@@ -98,6 +102,12 @@
                                 No
                             {% endif %}
                         </span>
+                    </div>
+                
+                    <div class="card-actions">
+                        <a href="{% url 'download_article_latest_version' book.id article.id %}" class="btn btn-secondary">
+                            Download latest version
+                        </a>
                     </div>
                 </li>
             {% endfor %}
