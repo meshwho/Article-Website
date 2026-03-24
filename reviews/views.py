@@ -249,10 +249,11 @@ def admin_article_detail(request, article_id):
 
 @login_required
 @role_required(['admin'])
-def remove_reviewer(request, assignment_id):
+def remove_reviewer(request, article_id, assignment_id):
     assignment = get_object_or_404(
         ReviewAssignment.objects.select_related('article'),
-        id=assignment_id
+        id=assignment_id,
+        article_id=article_id
     )
 
     article = assignment.article
