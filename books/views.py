@@ -224,3 +224,18 @@ def book_article_detail(request, book_id, article_id):
             'form': form,
         }
     )
+
+@login_required
+@role_required(['admin'])
+def delete_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+
+    if request.method == 'POST':
+        book.delete()
+        return redirect('admin_books')
+
+    return render(
+        request,
+        'books/delete_book.html',
+        {'book': book}
+    )

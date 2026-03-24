@@ -14,6 +14,7 @@
     {% if book.submission_mode == 'invitation' %}
         <a href="{% url 'manage_book_authors' book.id %}" class="btn btn-secondary">Manage allowed authors</a>
     {% endif %}
+    <a href="{% url 'delete_book' book.id %}" class="btn btn-secondary">Delete book</a>
 </p>
 
 <div class="summary-grid">
