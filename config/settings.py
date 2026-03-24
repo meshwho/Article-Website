@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'books',
     'articles',
     'notifications',
-    'reviews'
+    'reviews',
+
+
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [

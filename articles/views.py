@@ -189,7 +189,6 @@ def edit_article(request, article_id):
         form = ArticleEditForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
             article = form.save(commit=False)
-            article.status = Article.STATUS_UNDER_REVIEW
             article.save()
             return redirect('article_detail', article_id=article.id)
     else:
