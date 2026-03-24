@@ -101,7 +101,7 @@ def choose_book(request):
 @role_required(['author'])
 def create_article(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     is_allowed = (
         (book.submission_deadline and book.submission_deadline >= timezone.now()) and
         (
@@ -148,6 +148,7 @@ def create_article(request, book_id):
         request,
         'articles/create_article.html',
         {
+            'unread_count': unread_count,
             'form': form,
             'book': book,
         }
@@ -157,6 +158,7 @@ def create_article(request, book_id):
 @login_required
 @role_required(['author'])
 def article_detail(request, article_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     article = get_object_or_404(
         Article.objects.prefetch_related('review_assignments__reviews'),
         id=article_id,
@@ -166,13 +168,17 @@ def article_detail(request, article_id):
     return render(
         request,
         'articles/article_detail.html',
-        {'article': article}
+        {
+            'article': article,
+            'unread_count': unread_count,
+        }
     )
 
 
 @login_required
 @role_required(['author'])
 def edit_article(request, article_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     article = get_object_or_404(
         Article,
         id=article_id,
@@ -193,6 +199,7 @@ def edit_article(request, article_id):
         request,
         'articles/edit_article.html',
         {
+            'unread_count': unread_count,
             'form': form,
             'article': article,
         }
@@ -202,6 +209,7 @@ def edit_article(request, article_id):
 @login_required
 @role_required(['author'])
 def upload_new_version(request, article_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     article = get_object_or_404(
         Article,
         id=article_id,
@@ -240,6 +248,7 @@ def upload_new_version(request, article_id):
         request,
         'articles/upload_new_version.html',
         {
+            'unread_count': unread_count,
             'article': article,
             'form': form,
         }

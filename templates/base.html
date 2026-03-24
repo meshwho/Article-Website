@@ -18,7 +18,12 @@
             <nav class="top-nav">
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'dashboard' %}">Dashboard</a>
-                    <a href="{% url 'my_notifications' %}">Notifications</a>
+                    <a href="{% url 'my_notifications' %}" class="notifications-link">
+                        Notifications
+                        {% if request.user.is_authenticated and unread_count > 0 %}
+                            <span class="notification-badge">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
                     <a href="{% url 'custom_logout' %}">Logout</a>
                 {% else %}
                     <a href="{% url 'login' %}">Login</a>

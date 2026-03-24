@@ -62,6 +62,7 @@ def reviewer_assignments(request):
 @login_required
 @role_required(['reviewer'])
 def reviewer_article_detail(request, assignment_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     assignment = get_object_or_404(
         ReviewAssignment.objects.select_related(
             'article',
@@ -82,6 +83,7 @@ def reviewer_article_detail(request, assignment_id):
         request,
         'reviews/reviewer_article_detail.html',
         {
+            'unread_count': unread_count,
             'assignment': assignment,
             'article': assignment.article,
             'form': form,
@@ -92,6 +94,7 @@ def reviewer_article_detail(request, assignment_id):
 @login_required
 @role_required(['reviewer'])
 def submit_review(request, assignment_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     assignment = get_object_or_404(
         ReviewAssignment.objects.select_related('article'),
         id=assignment_id,
@@ -146,6 +149,7 @@ def submit_review(request, assignment_id):
         request,
         'reviews/submit_review.html',
         {
+            'unread_count': unread_count,
             'assignment': assignment,
             'form': form
         }
@@ -155,18 +159,23 @@ def submit_review(request, assignment_id):
 @login_required
 @role_required(['admin'])
 def admin_articles(request):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     articles = Article.objects.select_related('author', 'book').order_by('-created_at')
 
     return render(
         request,
         'reviews/admin_articles.html',
-        {'articles': articles}
+        {
+            'articles': articles,
+            'unread_count': unread_count,
+        }
     )
 
 
 @login_required
 @role_required(['admin'])
 def admin_article_detail(request, article_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     article = get_object_or_404(
         Article.objects.select_related('author', 'book').prefetch_related(
             'review_assignments__reviews',
@@ -232,6 +241,7 @@ def admin_article_detail(request, article_id):
         request,
         'reviews/admin_article_detail.html',
         {
+            'unread_count': unread_count,
             'article': article,
             'form': form,
         }

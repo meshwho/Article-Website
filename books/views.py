@@ -16,18 +16,23 @@ from notifications.models import Notification
 @login_required
 @role_required(['admin'])
 def admin_books(request):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     books = Book.objects.select_related('created_by').prefetch_related('allowed_authors').order_by('-created_at')
 
     return render(
         request,
         'books/admin_books.html',
-        {'books': books}
+        {
+            'books': books,
+            'unread_count': unread_count,
+        }
     )
 
 
 @login_required
 @role_required(['admin'])
 def create_book(request):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     if request.method == 'POST':
         form = BookForm(request.POST)
         if form.is_valid():
@@ -41,13 +46,17 @@ def create_book(request):
     return render(
         request,
         'books/create_book.html',
-        {'form': form}
+        {
+            'form': form,
+            'unread_count': unread_count,
+        }
     )
 
 
 @login_required
 @role_required(['admin'])
 def book_detail(request, book_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     book = get_object_or_404(
         Book.objects.prefetch_related('allowed_authors'),
         id=book_id
@@ -99,12 +108,14 @@ def book_detail(request, book_id):
             'selected_reviewer_filter': selected_reviewer_filter,
             'author_choices': author_choices,
             'status_choices': book.articles.model.STATUS_CHOICES,
+            'unread_count': unread_count,
         }
     )
 
 @login_required
 @role_required(['admin'])
 def edit_book(request, book_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     book = get_object_or_404(Book, id=book_id)
 
     if request.method == 'POST':
@@ -121,6 +132,7 @@ def edit_book(request, book_id):
         {
             'book': book,
             'form': form,
+            'unread_count': unread_count,
         }
     )
 
@@ -128,6 +140,7 @@ def edit_book(request, book_id):
 @login_required
 @role_required(['admin'])
 def manage_book_authors(request, book_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     book = get_object_or_404(Book, id=book_id)
 
     if request.method == 'POST':
@@ -142,6 +155,7 @@ def manage_book_authors(request, book_id):
         request,
         'books/manage_book_authors.html',
         {
+            'unread_count': unread_count,
             'book': book,
             'form': form,
         }
