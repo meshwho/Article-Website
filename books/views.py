@@ -13,6 +13,8 @@ from reviews.models import ReviewAssignment
 from django.urls import reverse
 from notifications.models import Notification
 
+from django.db import models
+
 @login_required
 @role_required(['admin'])
 def admin_books(request):
@@ -140,24 +142,44 @@ def edit_book(request, book_id):
 @login_required
 @role_required(['admin'])
 def manage_book_authors(request, book_id):
-    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     book = get_object_or_404(Book, id=book_id)
+
+    search_query = request.GET.get('q', '').strip()
 
     if request.method == 'POST':
         form = BookAuthorsForm(request.POST, instance=book)
+
+        queryset = form.fields['allowed_authors'].queryset
+        if search_query:
+            queryset = queryset.filter(
+                models.Q(first_name__icontains=search_query) |
+                models.Q(last_name__icontains=search_query) |
+                models.Q(username__icontains=search_query)
+            )
+        form.fields['allowed_authors'].queryset = queryset
+
         if form.is_valid():
             form.save()
-            return redirect('book_detail', book_id=book.id)
+            return redirect('manage_book_authors', book_id=book.id)
     else:
         form = BookAuthorsForm(instance=book)
+
+        queryset = form.fields['allowed_authors'].queryset
+        if search_query:
+            queryset = queryset.filter(
+                models.Q(first_name__icontains=search_query) |
+                models.Q(last_name__icontains=search_query) |
+                models.Q(username__icontains=search_query)
+            )
+        form.fields['allowed_authors'].queryset = queryset
 
     return render(
         request,
         'books/manage_book_authors.html',
         {
-            'unread_count': unread_count,
             'book': book,
             'form': form,
+            'search_query': search_query,
         }
     )
 

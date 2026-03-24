@@ -18,10 +18,51 @@
 </div>
 
 {% if book.submission_mode == 'invitation' %}
+    <form method="get" class="toolbar" style="margin-top: 20px;">
+        <div class="field">
+            <label for="q">Search author</label>
+            <input type="text" name="q" id="q" value="{{ search_query }}">
+        </div>
+
+        <div class="toolbar-actions">
+            <button type="submit">Search</button>
+            <a href="{% url 'manage_book_authors' book.id %}" class="btn btn-secondary">Reset</a>
+        </div>
+    </form>
+
     <div class="form-panel">
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+
+            {% if form.non_field_errors %}
+                <div class="messages">
+                    {% for error in form.non_field_errors %}
+                        <div class="message">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="checkbox-group">
+                <div class="checkbox-group-title">Allowed authors</div>
+
+                {% for checkbox in form.allowed_authors %}
+                    <label class="checkbox-item">
+                        {{ checkbox.tag }}
+                        <span>{{ checkbox.choice_label }}</span>
+                    </label>
+                {% empty %}
+                    <p class="empty-state">No authors available.</p>
+                {% endfor %}
+
+                {% if form.allowed_authors.errors %}
+                    <div class="field-errors">
+                        {% for error in form.allowed_authors.errors %}
+                            <div class="message">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
             <button type="submit">Save allowed authors</button>
         </form>
     </div>
