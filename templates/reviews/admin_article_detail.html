@@ -5,7 +5,7 @@
 {% block content %}
 <h1 class="page-title">{{ article.title }}</h1>
 <p class="page-intro">
-    Inspect article details, reviewer activity and assignment history.
+    Inspect article details, reviewers, versions and co-authors.
 </p>
 
 <p>
@@ -25,12 +25,25 @@
 
 <div class="list-panel">
     <h2 class="section-title">Article Information</h2>
-    <p class="item-meta"><strong>Author:</strong> {{ article.author }}</p>
+    <p class="item-meta"><strong>Main author:</strong> {{ article.author }}</p>
     <p class="item-meta"><strong>Created:</strong> {{ article.created_at }}</p>
     <p class="item-meta"><strong>Updated:</strong> {{ article.updated_at }}</p>
 
+    {% if article.coauthors.all %}
+        <p class="item-meta"><strong>Co-authors:</strong></p>
+        <ul class="item-list">
+            {% for user in article.coauthors.all %}
+                <li>
+                    <h3 class="item-title">{{ user }}</h3>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="item-meta"><strong>Co-authors:</strong> none</p>
+    {% endif %}
+
     {% if article.abstract %}
-        <p class="card-text">{{ article.abstract }}</p>
+        <div class="card-text">{{ article.abstract }}</div>
     {% endif %}
 
     {% if article.file %}
@@ -46,18 +59,6 @@
                 <li>
                     <h3 class="item-title">{{ assignment.reviewer }}</h3>
                     <p class="item-meta">Assignment status: {{ assignment.get_status_display }}</p>
-                    <p class="item-meta">
-                        Reviewer state:
-                        {% if assignment.is_active %}Active{% else %}Removed{% endif %}
-                    </p>
-
-                    {% if assignment.is_active %}
-                        <p>
-                            <a href="{% url 'remove_reviewer' article.id assignment.id %}" class="btn btn-secondary">
-                                Remove reviewer
-                            </a>
-                        </p>
-                    {% endif %}
 
                     {% if assignment.reviews.all %}
                         <ul class="item-list">

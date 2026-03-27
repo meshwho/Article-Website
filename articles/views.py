@@ -74,10 +74,9 @@ def choose_book(request):
     selected_creator = request.GET.get('creator', '').strip()
 
     books = Book.objects.filter(
-        submission_deadline__gte=timezone.now()
-    ).filter(
-        models.Q(submission_mode=Book.SUBMISSION_MODE_ALL) |
-        models.Q(submission_mode=Book.SUBMISSION_MODE_INVITATION, allowed_authors=request.user)
+        submission_deadline__gte=timezone.now(),
+        submission_mode=Book.SUBMISSION_MODE_INVITATION,
+        allowed_authors=request.user
     ).select_related('created_by').distinct().order_by('submission_deadline', 'title')
 
     if search_query:
@@ -86,8 +85,7 @@ def choose_book(request):
     if selected_creator:
         books = books.filter(created_by_id=selected_creator)
 
-    open_books = books.filter(submission_mode=Book.SUBMISSION_MODE_ALL)
-    invitation_books = books.filter(submission_mode=Book.SUBMISSION_MODE_INVITATION)
+    invitation_books = books
 
     creator_ids = books.values_list('created_by_id', flat=True).distinct()
 
@@ -109,7 +107,6 @@ def choose_book(request):
             'search_query': search_query,
             'selected_creator': selected_creator,
             'creators': creators,
-            'open_books': open_books,
             'invitation_books': invitation_books,
         }
     )

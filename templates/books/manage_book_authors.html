@@ -10,6 +10,7 @@
 
 <p>
     <a href="{% url 'book_detail' book.id %}" class="btn btn-secondary">Back to book</a>
+    <a href="{% url 'create_book_author_invite' book.id %}" class="btn btn-secondary">Generate author invite link</a>
 </p>
 
 <div class="list-panel">
@@ -17,58 +18,86 @@
     <p class="item-meta"><strong>Submission mode:</strong> {{ book.get_submission_mode_display }}</p>
 </div>
 
-{% if book.submission_mode == 'invitation' %}
-    <form method="get" class="toolbar" style="margin-top: 20px;">
-        <div class="field">
-            <label for="q">Search author</label>
-            <input type="text" name="q" id="q" value="{{ search_query }}">
+{% if active_invite %}
+    <h2 class="section-title">Author Invite Link</h2>
+    <div class="list-panel">
+        <p class="item-meta">
+            Share this link with the future invited author:
+        </p>
+
+        <div class="invite-link-text" id="bookAuthorInviteLink">
+            {{ request.scheme }}://{{ request.get_host }}{% url 'accept_book_author_invite' active_invite.token %}
         </div>
 
-        <div class="toolbar-actions">
-            <button type="submit">Search</button>
-            <a href="{% url 'manage_book_authors' book.id %}" class="btn btn-secondary">Reset</a>
+        <div class="card-actions">
+            <button type="button" class="btn btn-secondary" onclick="copyBookAuthorInviteLink()">
+                Copy
+            </button>
         </div>
-    </form>
 
-    <div class="form-panel">
-        <form method="post">
-            {% csrf_token %}
+        <p class="copy-status" id="copyBookAuthorInviteStatus"></p>
+    </div>
+{% endif %}
 
-            {% if form.non_field_errors %}
-                <div class="messages">
-                    {% for error in form.non_field_errors %}
+<form method="get" class="toolbar" style="margin-top: 20px;">
+    <div class="field">
+        <label for="q">Search author</label>
+        <input type="text" name="q" id="q" value="{{ search_query }}">
+    </div>
+
+    <div class="toolbar-actions">
+        <button type="submit">Search</button>
+        <a href="{% url 'manage_book_authors' book.id %}" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+<div class="form-panel">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="messages">
+                {% for error in form.non_field_errors %}
+                    <div class="message">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="checkbox-group">
+            <div class="checkbox-group-title">Allowed authors</div>
+
+            {% for checkbox in form.allowed_authors %}
+                <label class="checkbox-item">
+                    {{ checkbox.tag }}
+                    <span>{{ checkbox.choice_label }}</span>
+                </label>
+            {% empty %}
+                <p class="empty-state">No authors available.</p>
+            {% endfor %}
+
+            {% if form.allowed_authors.errors %}
+                <div class="field-errors">
+                    {% for error in form.allowed_authors.errors %}
                         <div class="message">{{ error }}</div>
                     {% endfor %}
                 </div>
             {% endif %}
+        </div>
 
-            <div class="checkbox-group">
-                <div class="checkbox-group-title">Allowed authors</div>
+        <button type="submit">Save allowed authors</button>
+    </form>
+</div>
 
-                {% for checkbox in form.allowed_authors %}
-                    <label class="checkbox-item">
-                        {{ checkbox.tag }}
-                        <span>{{ checkbox.choice_label }}</span>
-                    </label>
-                {% empty %}
-                    <p class="empty-state">No authors available.</p>
-                {% endfor %}
+<script>
+function copyBookAuthorInviteLink() {
+    const linkText = document.getElementById('bookAuthorInviteLink').innerText.trim();
+    const status = document.getElementById('copyBookAuthorInviteStatus');
 
-                {% if form.allowed_authors.errors %}
-                    <div class="field-errors">
-                        {% for error in form.allowed_authors.errors %}
-                            <div class="message">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <button type="submit">Save allowed authors</button>
-        </form>
-    </div>
-{% else %}
-    <div class="list-panel">
-        <p class="empty-state">This book is open to all authors. Invitation list is not used.</p>
-    </div>
-{% endif %}
+    navigator.clipboard.writeText(linkText).then(function () {
+        status.textContent = 'Copied';
+    }).catch(function () {
+        status.textContent = 'Could not copy the link';
+    });
+}
+</script>
 {% endblock %}

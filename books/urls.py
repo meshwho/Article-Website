@@ -10,6 +10,8 @@ from .views import (
     download_book_articles,
     edit_book,
     manage_book_authors,
+    create_book_author_invite,
+    accept_book_author_invite,
 )
 urlpatterns = [
     path('dashboard/books/', admin_books, name='admin_books'),
@@ -21,4 +23,6 @@ urlpatterns = [
     path('dashboard/books/<int:book_id>/delete/', delete_book, name='delete_book'),
     path('dashboard/books/<int:book_id>/download/', download_book_articles, name='download_book_articles'),
     path('dashboard/books/<int:book_id>/articles/<int:article_id>/download/', download_article_latest_version, name='download_article_latest_version'),
+    path('dashboard/books/<int:book_id>/author-invite/', create_book_author_invite, name='create_book_author_invite'),
+    path('books/author-invite/<uuid:token>/', accept_book_author_invite, name='accept_book_author_invite'),
 ]

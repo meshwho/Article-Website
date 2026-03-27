@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from users.decorators import role_required
 from .forms import BookAuthorsForm, BookForm
-from .models import Book
+from .models import Book, BookAuthorInvite
 from articles.models import Article
 
 from django.contrib import messages
@@ -23,6 +23,8 @@ from django.db import models
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
+
+from django.utils import timezone
 
 @login_required
 @role_required(['admin'])
@@ -49,6 +51,7 @@ def create_book(request):
         if form.is_valid():
             book = form.save(commit=False)
             book.created_by = request.user
+            book.submission_mode = Book.SUBMISSION_MODE_INVITATION
             book.save()
             return redirect('book_detail', book_id=book.id)
     else:
@@ -132,7 +135,9 @@ def edit_book(request, book_id):
     if request.method == 'POST':
         form = BookForm(request.POST, instance=book)
         if form.is_valid():
-            form.save()
+            book = form.save(commit=False)
+            book.submission_mode = Book.SUBMISSION_MODE_INVITATION
+            book.save()
             return redirect('book_detail', book_id=book.id)
     else:
         form = BookForm(instance=book)
@@ -151,8 +156,8 @@ def edit_book(request, book_id):
 @login_required
 @role_required(['admin'])
 def manage_book_authors(request, book_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     book = get_object_or_404(Book, id=book_id)
-
     search_query = request.GET.get('q', '').strip()
 
     if request.method == 'POST':
@@ -182,6 +187,8 @@ def manage_book_authors(request, book_id):
             )
         form.fields['allowed_authors'].queryset = queryset
 
+    active_invite = book.author_invites.filter(is_active=True).first()
+
     return render(
         request,
         'books/manage_book_authors.html',
@@ -189,6 +196,8 @@ def manage_book_authors(request, book_id):
             'book': book,
             'form': form,
             'search_query': search_query,
+            'active_invite': active_invite,
+            'unread_count': unread_count,
         }
     )
 
@@ -373,3 +382,46 @@ def download_article_latest_version(request, book_id, article_id):
         as_attachment=True,
         filename=Path(file_field.name).name
     )
+
+
+@login_required
+@role_required(['admin'])
+def create_book_author_invite(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+
+    BookAuthorInvite.objects.filter(
+        book=book,
+        is_active=True
+    ).update(is_active=False)
+
+    BookAuthorInvite.objects.create(
+        book=book,
+        created_by=request.user
+    )
+
+    return redirect('manage_book_authors', book_id=book.id)
+
+
+def accept_book_author_invite(request, token):
+    invite = get_object_or_404(
+        BookAuthorInvite.objects.select_related('book'),
+        token=token,
+        is_active=True
+    )
+
+    book = invite.book
+
+    if not request.user.is_authenticated:
+        return render(
+            request,
+            'books/book_author_invite_landing.html',
+            {
+                'invite': invite,
+                'book': book,
+            }
+        )
+
+    book.allowed_authors.add(request.user)
+
+    messages.success(request, 'You have been added to the allowed authors list for this book.')
+    return redirect('choose_book')

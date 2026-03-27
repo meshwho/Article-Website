@@ -33,37 +33,6 @@
     </div>
 </form>
 
-<h2 class="section-title">Open Books</h2>
-{% if open_books %}
-    <div class="cards">
-        {% for book in open_books %}
-            <article class="card">
-                <div class="badge">Open</div>
-                <h3 class="card-title">
-                    <a href="{% url 'create_article' book.id %}">{{ book.title }}</a>
-                </h3>
-
-                <p class="card-text">
-                    {% if book.description %}
-                        {{ book.description }}
-                    {% else %}
-                        No description available.
-                    {% endif %}
-                </p>
-
-                <p class="card-meta"><strong>Deadline:</strong> {{ book.submission_deadline }}</p>
-                <p class="card-meta"><strong>Created by:</strong> {{ book.created_by }}</p>
-
-                <div class="card-actions">
-                    <a href="{% url 'create_article' book.id %}" class="btn">Submit to this book</a>
-                </div>
-            </article>
-        {% endfor %}
-    </div>
-{% else %}
-    <p class="empty-state">No open books found.</p>
-{% endif %}
-
 <h2 class="section-title">Invitation Books</h2>
 {% if invitation_books %}
     <div class="cards">

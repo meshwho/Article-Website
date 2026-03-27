@@ -12,8 +12,7 @@ class BookForm(forms.ModelForm):
 
     class Meta:
         model = Book
-        fields = ['title', 'description', 'submission_mode', 'submission_deadline']
-
+        fields = ['title', 'description', 'submission_deadline']
 
 class BookAuthorsForm(forms.ModelForm):
     allowed_authors = forms.ModelMultipleChoiceField(
