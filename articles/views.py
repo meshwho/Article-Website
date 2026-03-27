@@ -181,7 +181,8 @@ def article_detail(request, article_id):
         Article.objects.prefetch_related(
             'versions',
             'review_assignments__reviews',
-            'coauthors'
+            'coauthors',
+            'coauthor_invites'
         ),
         id=article_id
     )
@@ -204,6 +205,8 @@ def article_detail(request, article_id):
                 article_version=latest_version
             ).exists()
 
+    active_invite = article.coauthor_invites.filter(is_active=True).first()
+
     return render(
         request,
         'articles/article_detail.html',
@@ -213,6 +216,7 @@ def article_detail(request, article_id):
             'can_upload_new_version': can_upload_new_version,
             'can_edit_article': can_edit_article,
             'can_manage_coauthors': can_manage_coauthors,
+            'active_invite': active_invite,
         }
     )
 
@@ -317,9 +321,12 @@ def create_coauthor_invite(request, article_id):
         author=request.user
     )
 
-    ArticleCoauthorInvite.objects.filter(article=article, is_active=True).update(is_active=False)
+    ArticleCoauthorInvite.objects.filter(
+        article=article,
+        is_active=True
+    ).update(is_active=False)
 
-    invite = ArticleCoauthorInvite.objects.create(
+    ArticleCoauthorInvite.objects.create(
         article=article,
         created_by=request.user
     )
@@ -351,14 +358,8 @@ def accept_coauthor_invite(request, token):
 
     article.coauthors.add(request.user)
 
-    invite.is_active = False
-    invite.used_by = request.user
-    invite.used_at = timezone.now()
-    invite.save()
-
     messages.success(request, 'You have been added as a co-author.')
     return redirect('article_detail', article_id=article.id)
-
 
 @login_required
 @role_required(['author'])

@@ -151,25 +151,12 @@ class ArticleCoauthorInvite(models.Model):
         verbose_name='Active'
     )
 
-    used_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='used_coauthor_invites',
-        verbose_name='Used by'
-    )
-
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Created at'
     )
 
-    used_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name='Used at'
-    )
+
 
     def __str__(self):
         return f'Invite for {self.article.title}'
