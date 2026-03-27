@@ -11,15 +11,9 @@
 <div class="action-row">
     <a href="{% url 'my_articles' %}" class="btn btn-secondary">Back to my articles</a>
     <a href="{% url 'edit_article' article.id %}" class="btn btn-secondary">Edit article</a>
-    <a href="{% url 'upload_new_version' article.id %}" class="btn">Upload new version</a>
-
-    <form method="post"
-          action="{% url 'delete_article' article.id %}"
-          class="inline-form push-right"
-          onsubmit="return confirm('Delete this article?');">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Delete article</button>
-    </form>
+    {% if can_upload_new_version %}
+        <a href="{% url 'upload_new_version' article.id %}" class="btn">Upload new version</a>
+    {% endif %}
 </div>
 
 <div class="summary-grid">
@@ -65,13 +59,7 @@
                         <a href="{{ version.file.url }}" class="btn btn-secondary">Download version file</a>
                     </p>
                 
-                    <form method="post"
-                          action="{% url 'delete_article_version' version.id %}"
-                          style="display:inline;"
-                          onsubmit="return confirm('Delete this article version?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Delete version</button>
-                    </form>
+                
                 </li>
             {% endfor %}
         </ul>

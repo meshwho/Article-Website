@@ -93,13 +93,6 @@
                 
                     <p class="item-meta">Submitted at: {{ review.created_at }}</p>
                 
-                    <form method="post"
-                          action="{% url 'delete_review' review.id %}"
-                          style="display:inline;"
-                          onsubmit="return confirm('Delete this review?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Delete review</button>
-                    </form>
                 </li>
             {% endfor %}
         </ul>
@@ -110,10 +103,14 @@
 
 <h2 class="section-title">Submit New Review</h2>
 <div class="form-panel">
-    <form method="post" action="{% url 'submit_review' assignment.id %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit review</button>
-    </form>
+    {% if can_submit_review %}
+        <form method="post" action="{% url 'submit_review' assignment.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit review</button>
+        </form>
+    {% else %}
+        <p class="empty-state">You have already reviewed the latest version.</p>
+    {% endif %}
 </div>
 {% endblock %}

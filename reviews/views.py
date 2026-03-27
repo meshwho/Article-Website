@@ -77,16 +77,27 @@ def reviewer_article_detail(request, assignment_id):
         is_active=True
     )
 
-    form = ReviewForm(assignment=assignment)
+    latest_version = assignment.article.versions.first()
+
+    can_submit_review = False
+    if latest_version:
+        can_submit_review = not Review.objects.filter(
+            assignment=assignment,
+            article_version=latest_version
+        ).exists()
+
+    form = ReviewForm(assignment=assignment) if can_submit_review else None
 
     return render(
         request,
         'reviews/reviewer_article_detail.html',
         {
-            'unread_count': unread_count,
             'assignment': assignment,
             'article': assignment.article,
             'form': form,
+            'can_submit_review': can_submit_review,
+            'latest_version': latest_version,
+            'unread_count': unread_count,
         }
     )
 
@@ -96,52 +107,53 @@ def reviewer_article_detail(request, assignment_id):
 def submit_review(request, assignment_id):
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     assignment = get_object_or_404(
-        ReviewAssignment.objects.select_related('article'),
+        ReviewAssignment.objects.select_related('article').prefetch_related('article__versions'),
         id=assignment_id,
         reviewer=request.user,
         is_active=True
     )
 
+    latest_version = assignment.article.versions.first()
+
+    if latest_version is None:
+        return redirect('reviewer_article_detail', assignment_id=assignment.id)
+
+    already_reviewed_latest = Review.objects.filter(
+        assignment=assignment,
+        article_version=latest_version
+    ).exists()
+
+    if already_reviewed_latest:
+        return redirect('reviewer_article_detail', assignment_id=assignment.id)
+
     if request.method == 'POST':
         form = ReviewForm(request.POST, request.FILES, assignment=assignment)
         if form.is_valid():
-            selected_version = form.cleaned_data['article_version']
+            review = form.save(commit=False)
+            review.assignment = assignment
+            review.article_version = latest_version
+            review.save()
 
-            existing_review = Review.objects.filter(
-                assignment=assignment,
-                article_version=selected_version
-            ).exists()
+            Notification.objects.create(
+                user=assignment.article.author,
+                title='New review received',
+                message=f'A new review was submitted for your article "{assignment.article.title}".',
+                link=f'/articles/{assignment.article.id}/'
+            )
 
-            if existing_review:
-                form.add_error(
-                    'article_version',
-                    'You have already submitted a review for this version.'
-                )
-            else:
-                review = form.save(commit=False)
-                review.assignment = assignment
-                review.save()
+            assignment.status = ReviewAssignment.STATUS_REVIEW_SUBMITTED
+            assignment.save()
 
-                Notification.objects.create(
-                    user=assignment.article.author,
-                    title='New review received',
-                    message=f'A new review was submitted for your article "{assignment.article.title}".',
-                    link=f'/articles/{assignment.article.id}/'
-                )
+            article = assignment.article
+            if review.recommendation == Review.RECOMMENDATION_ACCEPT:
+                article.status = Article.STATUS_ACCEPTED
+            elif review.recommendation == Review.RECOMMENDATION_REVISION:
+                article.status = Article.STATUS_REVISION_REQUIRED
+            elif review.recommendation == Review.RECOMMENDATION_REJECT:
+                article.status = Article.STATUS_REJECTED
+            article.save()
 
-                assignment.status = ReviewAssignment.STATUS_REVIEW_SUBMITTED
-                assignment.save()
-
-                article = assignment.article
-                if review.recommendation == Review.RECOMMENDATION_ACCEPT:
-                    article.status = Article.STATUS_ACCEPTED
-                elif review.recommendation == Review.RECOMMENDATION_REVISION:
-                    article.status = Article.STATUS_REVISION_REQUIRED
-                elif review.recommendation == Review.RECOMMENDATION_REJECT:
-                    article.status = Article.STATUS_REJECTED
-                article.save()
-
-                return redirect('reviewer_article_detail', assignment_id=assignment.id)
+            return redirect('reviewer_article_detail', assignment_id=assignment.id)
     else:
         form = ReviewForm(assignment=assignment)
 
@@ -149,9 +161,9 @@ def submit_review(request, assignment_id):
         request,
         'reviews/submit_review.html',
         {
-            'unread_count': unread_count,
             'assignment': assignment,
-            'form': form
+            'form': form,
+            'unread_count': unread_count,
         }
     )
 
@@ -288,25 +300,3 @@ def remove_reviewer_from_book_article(request, book_id, article_id, assignment_i
     messages.success(request, 'Reviewer removed from active assignments. Review history was kept.')
     return redirect('book_article_detail', book_id=book_id, article_id=article_id)
 
-
-@login_required
-@role_required(['reviewer'])
-def delete_review(request, review_id):
-    review = get_object_or_404(
-        Review.objects.select_related('assignment'),
-        id=review_id,
-        assignment__reviewer=request.user
-    )
-
-    assignment = review.assignment
-
-    if request.method == 'POST':
-        review.delete()
-
-        if not assignment.reviews.exists():
-            assignment.status = ReviewAssignment.STATUS_ASSIGNED
-            assignment.save()
-
-        return redirect('reviewer_article_detail', assignment_id=assignment.id)
-
-    return redirect('reviewer_article_detail', assignment_id=assignment.id)

@@ -11,6 +11,8 @@ from users.models import CustomUser
 from .forms import ArticleCreateForm, ArticleEditForm, ArticleVersionForm
 from .models import Article, ArticleVersion
 
+from reviews.models import Review
+
 
 @login_required
 @role_required(['author'])
@@ -160,16 +162,26 @@ def create_article(request, book_id):
 def article_detail(request, article_id):
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     article = get_object_or_404(
-        Article.objects.prefetch_related('review_assignments__reviews'),
+        Article.objects.prefetch_related('versions', 'review_assignments__reviews'),
         id=article_id,
         author=request.user
     )
+
+    latest_version = article.versions.first()
+
+    can_upload_new_version = False
+    if latest_version:
+        can_upload_new_version = Review.objects.filter(
+            assignment__article=article,
+            article_version=latest_version
+        ).exists()
 
     return render(
         request,
         'articles/article_detail.html',
         {
             'article': article,
+            'can_upload_new_version': can_upload_new_version,
             'unread_count': unread_count,
         }
     )
@@ -210,16 +222,28 @@ def edit_article(request, article_id):
 def upload_new_version(request, article_id):
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     article = get_object_or_404(
-        Article,
+        Article.objects.prefetch_related('versions', 'review_assignments__reviews'),
         id=article_id,
         author=request.user
     )
 
+    latest_version = article.versions.first()
+
+    if latest_version is None:
+        return redirect('article_detail', article_id=article.id)
+
+    latest_version_has_review = Review.objects.filter(
+        assignment__article=article,
+        article_version=latest_version
+    ).exists()
+
+    if not latest_version_has_review:
+        return redirect('article_detail', article_id=article.id)
+
     if request.method == 'POST':
         form = ArticleVersionForm(request.POST, request.FILES)
         if form.is_valid():
-            last_version = article.versions.first()
-            next_version_number = 1 if last_version is None else last_version.version_number + 1
+            next_version_number = latest_version.version_number + 1
 
             version = form.save(commit=False)
             version.article = article
@@ -231,7 +255,7 @@ def upload_new_version(request, article_id):
             article.status = Article.STATUS_UNDER_REVIEW
             article.save()
 
-            for assignment in article.review_assignments.all():
+            for assignment in article.review_assignments.filter(is_active=True):
                 Notification.objects.create(
                     user=assignment.reviewer,
                     title='New article version uploaded',
@@ -247,49 +271,9 @@ def upload_new_version(request, article_id):
         request,
         'articles/upload_new_version.html',
         {
-            'unread_count': unread_count,
             'article': article,
             'form': form,
+            'unread_count': unread_count,
         }
     )
 
-@login_required
-@role_required(['author'])
-def delete_article(request, article_id):
-    article = get_object_or_404(
-        Article,
-        id=article_id,
-        author=request.user
-    )
-
-    if request.method == 'POST':
-        article.delete()
-        return redirect('my_articles')
-
-    return redirect('article_detail', article_id=article.id)
-
-
-@login_required
-@role_required(['author'])
-def delete_article_version(request, version_id):
-    version = get_object_or_404(
-        ArticleVersion.objects.select_related('article'),
-        id=version_id,
-        article__author=request.user
-    )
-
-    article = version.article
-
-    if request.method == 'POST':
-        version.delete()
-
-        latest_version = article.versions.first()
-        if latest_version:
-            article.file = latest_version.file
-        else:
-            article.file = None
-        article.save()
-
-        return redirect('article_detail', article_id=article.id)
-
-    return redirect('article_detail', article_id=article.id)
