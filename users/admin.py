@@ -10,7 +10,15 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = UserAdmin.fieldsets + (
         ('Additional information', {
-            'fields': ('role',),
+            'fields': (
+                'role',
+                'title',
+                'orcid',
+                'institution',
+                'institution_address',
+                'google_scholar',
+                'citizenship',
+            ),
         }),
     )
 
@@ -20,6 +28,8 @@ class CustomUserAdmin(UserAdmin):
         'last_name',
         'email',
         'role',
+        'institution',
+        'citizenship',
         'is_staff',
     )
 

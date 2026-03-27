@@ -15,7 +15,21 @@ class CustomUserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'email', 'role', 'password1', 'password2']
+        fields = [
+            'title',
+            'first_name',
+            'last_name',
+            'username',
+            'email',
+            'role',
+            'orcid',
+            'institution',
+            'institution_address',
+            'google_scholar',
+            'citizenship',
+            'password1',
+            'password2',
+        ]
 
 
 class ProfileForm(forms.ModelForm):
@@ -23,4 +37,15 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'email']
+        fields = [
+            'title',
+            'first_name',
+            'last_name',
+            'username',
+            'email',
+            'orcid',
+            'institution',
+            'institution_address',
+            'google_scholar',
+            'citizenship',
+        ]
