@@ -3,6 +3,7 @@ from django.db import models
 
 from books.models import Book
 
+import uuid
 
 class Article(models.Model):
     STATUS_DRAFT = 'draft'
@@ -50,6 +51,13 @@ class Article(models.Model):
         on_delete=models.CASCADE,
         related_name='articles',
         verbose_name='Author'
+    )
+
+    coauthors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name='coauthored_articles',
+        verbose_name='Co-authors'
     )
 
     status = models.CharField(
@@ -113,3 +121,55 @@ class ArticleVersion(models.Model):
 
     def __str__(self):
         return f'{self.article.title} - version {self.version_number}'
+
+
+
+class ArticleCoauthorInvite(models.Model):
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='coauthor_invites',
+        verbose_name='Article'
+    )
+
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name='Token'
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='created_coauthor_invites',
+        verbose_name='Created by'
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Active'
+    )
+
+    used_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='used_coauthor_invites',
+        verbose_name='Used by'
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created at'
+    )
+
+    used_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Used at'
+    )
+
+    def __str__(self):
+        return f'Invite for {self.article.title}'

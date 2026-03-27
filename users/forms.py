@@ -11,7 +11,7 @@ class CustomUserRegistrationForm(UserCreationForm):
     ]
 
     email = forms.EmailField(required=True)
-    role = forms.ChoiceField(choices=ROLE_CHOICES)
+    role = forms.ChoiceField(choices=ROLE_CHOICES, required=False)
 
     class Meta:
         model = CustomUser
@@ -30,6 +30,22 @@ class CustomUserRegistrationForm(UserCreationForm):
             'password1',
             'password2',
         ]
+
+    def __init__(self, *args, **kwargs):
+        hide_role = kwargs.pop('hide_role', False)
+        super().__init__(*args, **kwargs)
+
+        if hide_role:
+            self.fields['role'].widget = forms.HiddenInput()
+            self.fields['role'].initial = CustomUser.ROLE_AUTHOR
+        else:
+            self.fields['role'].required = True
+
+    def clean_role(self):
+        role = self.cleaned_data.get('role')
+        if not role:
+            return CustomUser.ROLE_AUTHOR
+        return role
 
 
 class ProfileForm(forms.ModelForm):

@@ -10,9 +10,16 @@
 
 <div class="action-row">
     <a href="{% url 'my_articles' %}" class="btn btn-secondary">Back to my articles</a>
-    <a href="{% url 'edit_article' article.id %}" class="btn btn-secondary">Edit article</a>
+    {% if can_edit_article %}
+        <a href="{% url 'edit_article' article.id %}" class="btn btn-secondary">Edit article</a>
+    {% endif %}
+
     {% if can_upload_new_version %}
         <a href="{% url 'upload_new_version' article.id %}" class="btn">Upload new version</a>
+    {% endif %}
+
+    {% if can_manage_coauthors %}
+        <a href="{% url 'create_coauthor_invite' article.id %}" class="btn btn-secondary">Generate co-author link</a>
     {% endif %}
 </div>
 
@@ -40,7 +47,35 @@
         <p><a href="{{ article.file.url }}" class="btn btn-secondary">Download article file</a></p>
     {% endif %}
 </div>
+    
+<h2 class="section-title">Authors</h2>
+<div class="list-panel">
+    <p class="item-meta"><strong>Main author:</strong> {{ article.author }}</p>
 
+    {% if article.coauthors.all %}
+        <ul class="item-list">
+            {% for user in article.coauthors.all %}
+                <li>
+                    <h3 class="item-title">{{ user }}</h3>
+                    <p class="item-meta">Co-author</p>
+
+                    {% if can_manage_coauthors %}
+                        <form method="post"
+                              action="{% url 'remove_coauthor' article.id user.id %}"
+                              class="inline-form"
+                              onsubmit="return confirm('Remove this co-author?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Remove co-author</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-state">No co-authors yet.</p>
+    {% endif %}
+</div>
+    
 <h2 class="section-title">Article Versions</h2>
 <div class="list-panel">
     {% if article.versions.all %}
@@ -59,7 +94,7 @@
                         <a href="{{ version.file.url }}" class="btn btn-secondary">Download version file</a>
                     </p>
                 
-                
+
                 </li>
             {% endfor %}
         </ul>
@@ -68,6 +103,22 @@
     {% endif %}
 </div>
 
+{% if can_manage_coauthors %}
+    {% with invite=article.coauthor_invites.first %}
+        {% if invite and invite.is_active %}
+            <h2 class="section-title">Active Co-author Invite</h2>
+            <div class="list-panel">
+                <p class="item-meta">
+                    Share this link with the будущий co-author:
+                </p>
+                <p class="card-text">
+                    {{ request.scheme }}://{{ request.get_host }}{% url 'accept_coauthor_invite' invite.token %}
+                </p>
+            </div>
+        {% endif %}
+    {% endwith %}
+{% endif %}
+    
 <h2 class="section-title">Reviews</h2>
 <div class="list-panel">
     {% if article.review_assignments.all %}

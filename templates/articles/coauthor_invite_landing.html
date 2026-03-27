@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Co-author Invitation{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Co-author Invitation</h1>
+<p class="page-intro">
+    You have been invited to join an article as a co-author.
+</p>
+
+<div class="list-panel">
+    <p class="item-meta"><strong>Article:</strong> {{ article.title }}</p>
+    <p class="item-meta"><strong>Main author:</strong> {{ article.author }}</p>
+    <p class="item-meta"><strong>Book:</strong> {{ article.book }}</p>
+
+    {% if article.abstract %}
+        <div class="card-text">{{ article.abstract }}</div>
+    {% endif %}
+</div>
+
+<div class="cards" style="margin-top: 24px;">
+    <article class="card">
+        <div class="badge badge-blue">Existing account</div>
+        <h2 class="card-title">Login</h2>
+        <p class="card-text">
+            Sign in and you will be added to this article automatically.
+        </p>
+        <div class="card-actions">
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn">Login</a>
+        </div>
+    </article>
+
+    <article class="card">
+        <div class="badge badge-yellow">New account</div>
+        <h2 class="card-title">Register</h2>
+        <p class="card-text">
+            Create an account first, then return here and join as a co-author.
+        </p>
+        <div class="card-actions">
+            <a href="{% url 'register' %}?next={{ request.path }}" class="btn btn-secondary">Register</a>
+        </div>
+    </article>
+</div>
+{% endblock %}

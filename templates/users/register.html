@@ -11,6 +11,17 @@
 <div class="form-panel">
     <form method="post">
         {% csrf_token %}
+    
+        {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+    
+        {% if hide_role %}
+            <p class="item-meta">
+                Role: Author
+            </p>
+        {% endif %}
+    
         {{ form.as_p }}
         <button type="submit">Create account</button>
     </form>

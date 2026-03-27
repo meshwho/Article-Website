@@ -16,16 +16,36 @@ def register(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
 
+    next_url = request.GET.get('next') or request.POST.get('next')
+    hide_role = bool(next_url and '/articles/coauthor-invite/' in next_url)
+
     if request.method == 'POST':
-        form = CustomUserRegistrationForm(request.POST)
+        form = CustomUserRegistrationForm(request.POST, hide_role=hide_role)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+
+            if hide_role:
+                user.role = user.ROLE_AUTHOR
+
+            user.save()
             login(request, user)
+
+            if next_url:
+                return redirect(next_url)
+
             return redirect('dashboard')
     else:
-        form = CustomUserRegistrationForm()
+        form = CustomUserRegistrationForm(hide_role=hide_role)
 
-    return render(request, 'users/register.html', {'form': form})
+    return render(
+        request,
+        'users/register.html',
+        {
+            'form': form,
+            'next': next_url,
+            'hide_role': hide_role,
+        }
+    )
 
 
 @login_required

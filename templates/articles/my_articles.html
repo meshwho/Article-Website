@@ -118,4 +118,27 @@
         <p class="empty-state">No other articles.</p>
     {% endif %}
 </div>
+    
+<h2 class="section-title">Observed Articles</h2>
+<div class="list-panel">
+    {% if observed_articles %}
+        <ul class="item-list">
+            {% for article in observed_articles %}
+                <li>
+                    <h3 class="item-title">
+                        <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="item-meta">Main author: {{ article.author }}</p>
+                    <div class="meta-row">
+                        <span>Status: {{ article.get_status_display }}</span>
+                        <span>Book: {{ article.book }}</span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-state">No observed articles.</p>
+    {% endif %}
+</div>
+    
 {% endblock %}

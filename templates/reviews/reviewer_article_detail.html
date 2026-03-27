@@ -49,6 +49,19 @@
     {% endwith %}
 </div>
 
+<p class="item-meta"><strong>Main author:</strong> {{ article.author }}</p>
+
+{% if article.coauthors.all %}
+    <p class="item-meta"><strong>Co-authors:</strong></p>
+    <ul class="item-list">
+        {% for user in article.coauthors.all %}
+            <li>{{ user }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="item-meta"><strong>Co-authors:</strong> none</p>
+{% endif %}
+    
 <h2 class="section-title">Article Version History</h2>
 <div class="list-panel">
     {% if article.versions.all %}

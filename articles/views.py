@@ -9,11 +9,24 @@ from notifications.models import Notification
 from users.decorators import role_required
 from users.models import CustomUser
 from .forms import ArticleCreateForm, ArticleEditForm, ArticleVersionForm
-from .models import Article, ArticleVersion
+from .models import Article, ArticleVersion, ArticleCoauthorInvite
+
+from django.contrib import messages
 
 from reviews.models import Review
 
-
+def can_view_article(user, article):
+    if user.is_superuser:
+        return True
+    if user.role == 'admin':
+        return True
+    if article.author_id == user.id:
+        return True
+    if article.coauthors.filter(id=user.id).exists():
+        return True
+    if article.review_assignments.filter(reviewer=user, is_active=True).exists():
+        return True
+    return False
 @login_required
 @role_required(['author'])
 def my_articles(request):
@@ -30,12 +43,15 @@ def my_articles(request):
             Article.STATUS_ACCEPTED,
         ]
     )
+    observed_articles = Article.objects.filter(coauthors=request.user).exclude(author=request.user).order_by(
+        '-created_at')
 
     return render(
         request,
         'articles/my_articles.html',
         {
             'articles': articles,
+            'observed_articles': observed_articles,
             'unread_count': unread_count,
             'revision_articles': revision_articles,
             'review_articles': review_articles,
@@ -158,31 +174,45 @@ def create_article(request, book_id):
 
 
 @login_required
-@role_required(['author'])
 def article_detail(request, article_id):
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
     article = get_object_or_404(
-        Article.objects.prefetch_related('versions', 'review_assignments__reviews'),
-        id=article_id,
-        author=request.user
+        Article.objects.prefetch_related(
+            'versions',
+            'review_assignments__reviews',
+            'coauthors'
+        ),
+        id=article_id
     )
 
-    latest_version = article.versions.first()
+    if not can_view_article(request.user, article):
+        return redirect('dashboard')
 
     can_upload_new_version = False
-    if latest_version:
-        can_upload_new_version = Review.objects.filter(
-            assignment__article=article,
-            article_version=latest_version
-        ).exists()
+    can_edit_article = False
+    can_manage_coauthors = False
+
+    if article.author_id == request.user.id:
+        can_edit_article = True
+        can_manage_coauthors = True
+
+        latest_version = article.versions.first()
+        if latest_version:
+            can_upload_new_version = Review.objects.filter(
+                assignment__article=article,
+                article_version=latest_version
+            ).exists()
 
     return render(
         request,
         'articles/article_detail.html',
         {
             'article': article,
-            'can_upload_new_version': can_upload_new_version,
             'unread_count': unread_count,
+            'can_upload_new_version': can_upload_new_version,
+            'can_edit_article': can_edit_article,
+            'can_manage_coauthors': can_manage_coauthors,
         }
     )
 
@@ -277,3 +307,70 @@ def upload_new_version(request, article_id):
         }
     )
 
+
+@login_required
+@role_required(['author'])
+def create_coauthor_invite(request, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id,
+        author=request.user
+    )
+
+    ArticleCoauthorInvite.objects.filter(article=article, is_active=True).update(is_active=False)
+
+    invite = ArticleCoauthorInvite.objects.create(
+        article=article,
+        created_by=request.user
+    )
+
+    return redirect('article_detail', article_id=article.id)
+
+
+def accept_coauthor_invite(request, token):
+    invite = get_object_or_404(
+        ArticleCoauthorInvite.objects.select_related('article'),
+        token=token,
+        is_active=True
+    )
+
+    article = invite.article
+
+    if not request.user.is_authenticated:
+        return render(
+            request,
+            'articles/coauthor_invite_landing.html',
+            {
+                'invite': invite,
+                'article': article,
+            }
+        )
+
+    if request.user.id == article.author_id:
+        return redirect('article_detail', article_id=article.id)
+
+    article.coauthors.add(request.user)
+
+    invite.is_active = False
+    invite.used_by = request.user
+    invite.used_at = timezone.now()
+    invite.save()
+
+    messages.success(request, 'You have been added as a co-author.')
+    return redirect('article_detail', article_id=article.id)
+
+
+@login_required
+@role_required(['author'])
+def remove_coauthor(request, article_id, user_id):
+    article = get_object_or_404(
+        Article.objects.prefetch_related('coauthors'),
+        id=article_id,
+        author=request.user
+    )
+
+    if request.method == 'POST':
+        article.coauthors.remove(user_id)
+        return redirect('article_detail', article_id=article.id)
+
+    return redirect('article_detail', article_id=article.id)
