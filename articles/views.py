@@ -118,11 +118,10 @@ def create_article(request, book_id):
     book = get_object_or_404(Book, id=book_id)
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     is_allowed = (
-        (book.submission_deadline and book.submission_deadline >= timezone.now()) and
-        (
-            book.submission_mode == Book.SUBMISSION_MODE_ALL or
-            (book.submission_mode == Book.SUBMISSION_MODE_INVITATION and book.allowed_authors.filter(id=request.user.id).exists())
-        )
+            book.submission_deadline
+            and book.submission_deadline >= timezone.now()
+            and book.submission_mode == Book.SUBMISSION_MODE_INVITATION
+            and book.allowed_authors.filter(id=request.user.id).exists()
     )
 
     if not is_allowed:

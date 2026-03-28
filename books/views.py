@@ -17,11 +17,10 @@ from io import BytesIO
 from pathlib import Path
 import zipfile
 
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+
+
 from django.db import models
 from django.http import FileResponse, Http404, HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 
 from django.utils import timezone
@@ -89,9 +88,9 @@ def book_detail(request, book_id):
         articles = articles.filter(author_id=selected_author)
 
     if selected_reviewer_filter == 'with_reviewer':
-        articles = articles.filter(review_assignments__isnull=False).distinct()
+        articles = articles.filter(review_assignments__is_active=True).distinct()
     elif selected_reviewer_filter == 'without_reviewer':
-        articles = articles.filter(review_assignments__isnull=True)
+        articles = articles.exclude(review_assignments__is_active=True).distinct()
 
     authors = book.articles.select_related('author').values_list(
         'author__id',
@@ -309,9 +308,9 @@ def get_filtered_book_articles(book, request):
         articles = articles.filter(author_id=selected_author)
 
     if selected_reviewer_filter == 'with_reviewer':
-        articles = articles.filter(review_assignments__isnull=False).distinct()
+        articles = articles.filter(review_assignments__is_active=True).distinct()
     elif selected_reviewer_filter == 'without_reviewer':
-        articles = articles.filter(review_assignments__isnull=True)
+        articles = articles.exclude(review_assignments__is_active=True).distinct()
 
     return articles
 
