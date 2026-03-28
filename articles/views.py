@@ -8,7 +8,7 @@ from books.models import Book
 from notifications.models import Notification
 from users.decorators import role_required
 from users.models import CustomUser
-from .forms import ArticleCreateForm, ArticleEditForm, ArticleVersionForm
+from .forms import ArticleCreateForm, ArticleEditForm, ArticleVersionForm, FullArticleUploadForm
 from .models import Article, ArticleVersion, ArticleCoauthorInvite
 
 from django.contrib import messages
@@ -133,17 +133,8 @@ def create_article(request, book_id):
             article = form.save(commit=False)
             article.author = request.user
             article.book = book
-            article.status = Article.STATUS_SUBMITTED
+            article.status = Article.STATUS_ABSTRACT_SUBMITTED
             article.save()
-
-            if article.file:
-                ArticleVersion.objects.create(
-                    article=article,
-                    file=article.file,
-                    version_number=1,
-                    comment='Initial version',
-                    uploaded_by=request.user
-                )
 
             admins = CustomUser.objects.filter(role='admin')
             for admin in admins:
@@ -187,12 +178,16 @@ def article_detail(request, article_id):
         return redirect('dashboard')
 
     can_upload_new_version = False
+    can_upload_full_article = False
     can_edit_article = False
     can_manage_coauthors = False
 
     if article.author_id == request.user.id:
         can_edit_article = True
         can_manage_coauthors = True
+
+        if article.status == Article.STATUS_ABSTRACT_APPROVED and not article.file:
+            can_upload_full_article = True
 
         latest_version = article.versions.first()
         if latest_version:
@@ -210,6 +205,7 @@ def article_detail(request, article_id):
             'article': article,
             'unread_count': unread_count,
             'can_upload_new_version': can_upload_new_version,
+            'can_upload_full_article': can_upload_full_article,
             'can_edit_article': can_edit_article,
             'can_manage_coauthors': can_manage_coauthors,
             'active_invite': active_invite,
@@ -371,3 +367,54 @@ def remove_coauthor(request, article_id, user_id):
         return redirect('article_detail', article_id=article.id)
 
     return redirect('article_detail', article_id=article.id)
+
+
+@login_required
+@role_required(['author'])
+def upload_full_article(request, article_id):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    article = get_object_or_404(
+        Article,
+        id=article_id,
+        author=request.user,
+        status=Article.STATUS_ABSTRACT_APPROVED
+    )
+
+    if article.file:
+        return redirect('article_detail', article_id=article.id)
+
+    if request.method == 'POST':
+        form = FullArticleUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            version = form.save(commit=False)
+            version.article = article
+            version.version_number = 1
+            version.uploaded_by = request.user
+            version.save()
+
+            article.file = version.file
+            article.status = Article.STATUS_SUBMITTED
+            article.save(update_fields=['file', 'status'])
+
+            admins = CustomUser.objects.filter(role='admin')
+            for admin in admins:
+                Notification.objects.create(
+                    user=admin,
+                    title='Full article uploaded',
+                    message=f'The full article "{article.title}" has been uploaded by {article.author}.',
+                    link=reverse('book_article_detail', args=[article.book.id, article.id])
+                )
+
+            return redirect('article_detail', article_id=article.id)
+    else:
+        form = FullArticleUploadForm()
+
+    return render(
+        request,
+        'articles/upload_full_article.html',
+        {
+            'article': article,
+            'form': form,
+            'unread_count': unread_count,
+        }
+    )

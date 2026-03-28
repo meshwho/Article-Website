@@ -7,6 +7,9 @@ import uuid
 
 class Article(models.Model):
     STATUS_DRAFT = 'draft'
+    STATUS_ABSTRACT_SUBMITTED = 'abstract_submitted'
+    STATUS_ABSTRACT_APPROVED = 'abstract_approved'
+    STATUS_ABSTRACT_REJECTED = 'abstract_rejected'
     STATUS_SUBMITTED = 'submitted'
     STATUS_UNDER_REVIEW = 'under_review'
     STATUS_REVISION_REQUIRED = 'revision_required'
@@ -15,7 +18,10 @@ class Article(models.Model):
 
     STATUS_CHOICES = [
         (STATUS_DRAFT, 'Draft'),
-        (STATUS_SUBMITTED, 'Submitted'),
+        (STATUS_ABSTRACT_SUBMITTED, 'Abstract submitted'),
+        (STATUS_ABSTRACT_APPROVED, 'Abstract approved'),
+        (STATUS_ABSTRACT_REJECTED, 'Abstract rejected'),
+        (STATUS_SUBMITTED, 'Full article submitted'),
         (STATUS_UNDER_REVIEW, 'Under review'),
         (STATUS_REVISION_REQUIRED, 'Revision required'),
         (STATUS_ACCEPTED, 'Accepted'),

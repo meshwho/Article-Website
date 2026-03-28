@@ -22,7 +22,7 @@
     <h2 class="section-title">Author Invite Link</h2>
     <div class="list-panel">
         <p class="item-meta">
-            Share this link with the future invited author:
+            Share this link with the future author:
         </p>
 
         <div class="invite-link-text" id="bookAuthorInviteLink">
@@ -30,14 +30,20 @@
         </div>
 
         <div class="card-actions">
-            <button type="button" class="btn btn-secondary" onclick="copyBookAuthorInviteLink()">
+            <button type="button"
+                    class="btn btn-secondary"
+                    onclick="copyBookAuthorInviteLink()">
                 Copy
             </button>
         </div>
 
-        <p class="copy-status" id="copyBookAuthorInviteStatus"></p>
+        <p class="copy-status" id="bookAuthorInviteStatus"></p>
     </div>
+{% else %}
+    <p class="empty-state">No active invite yet.</p>
 {% endif %}
+
+
 
 <form method="get" class="toolbar" style="margin-top: 20px;">
     <div class="field">
@@ -91,7 +97,7 @@
 <script>
 function copyBookAuthorInviteLink() {
     const linkText = document.getElementById('bookAuthorInviteLink').innerText.trim();
-    const status = document.getElementById('copyBookAuthorInviteStatus');
+    const status = document.getElementById('bookAuthorInviteStatus');
 
     navigator.clipboard.writeText(linkText).then(function () {
         status.textContent = 'Copied';

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Full Article{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Upload Full Article</h1>
+<p class="page-intro">
+    Your abstract has been approved. You can now upload the full article file.
+</p>
+
+<div class="form-panel">
+    <p><strong>Article:</strong> {{ article.title }}</p>
+    <p><strong>Book:</strong> {{ article.book.title }}</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload full article</button>
+    </form>
+</div>
+{% endblock %}

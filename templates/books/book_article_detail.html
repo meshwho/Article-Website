@@ -23,6 +23,20 @@
         <span class="summary-value">{{ article.author }}</span>
     </div>
 </div>
+    
+{% if article.status == 'abstract_submitted' %}
+    <div class="card-actions" style="margin-bottom: 20px;">
+        <form method="post" action="{% url 'approve_article_abstract' book.id article.id %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn">Approve abstract</button>
+        </form>
+
+        <form method="post" action="{% url 'reject_article_abstract' book.id article.id %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Reject abstract</button>
+        </form>
+    </div>
+{% endif %}
 
 <div class="list-panel">
     <h2 class="section-title">Article Information</h2>
@@ -39,18 +53,27 @@
     {% endif %}
 </div>
 
-<p class="item-meta"><strong>Main author:</strong> {{ article.author }}</p>
-
-{% if article.coauthors.all %}
-    <p class="item-meta"><strong>Co-authors:</strong></p>
+<h2 class="section-title">Authors</h2>
+<div class="list-panel">
     <ul class="item-list">
+        <li>
+            <h3 class="item-title">{{ article.author }}</h3>
+            <p class="item-meta">Main author</p>
+        </li>
+
         {% for user in article.coauthors.all %}
-            <li>{{ user }}</li>
+            <li>
+                <h3 class="item-title">{{ user }}</h3>
+                <p class="item-meta">Co-author</p>
+            </li>
+        {% empty %}
         {% endfor %}
     </ul>
-{% else %}
-    <p class="item-meta"><strong>Co-authors:</strong> none</p>
-{% endif %}
+
+    {% if not article.coauthors.exists %}
+        <p class="empty-state">No co-authors yet.</p>
+    {% endif %}
+</div>
     
 <h2 class="section-title">Article Version History</h2>
 <div class="list-panel">
@@ -73,65 +96,68 @@
     {% endif %}
 </div>
 
-<h2 class="section-title">Assigned Reviewers</h2>
-<div class="list-panel">
-    {% if article.review_assignments.all %}
-        <ul class="item-list">
-            {% for assignment in article.review_assignments.all %}
-                <li>
-                    <h3 class="item-title">{{ assignment.reviewer }}</h3>
-                    <p class="item-meta">Assignment status: {{ assignment.get_status_display }}</p>
-                    <p class="item-meta">
-                        Reviewer state:
-                        {% if assignment.is_active %}Active{% else %}Removed{% endif %}
-                    </p>
-
-                    {% if assignment.is_active %}
-                        <p>
-                            <a href="{% url 'remove_reviewer_from_book_article' book.id article.id assignment.id %}" class="btn btn-secondary">
-                                Remove reviewer
-                            </a>
+{% if can_assign_reviewer %}
+    <h2 class="section-title">Assigned Reviewers</h2>
+    <div class="list-panel">
+        {% if article.review_assignments.all %}
+            <ul class="item-list">
+                {% for assignment in article.review_assignments.all %}
+                    <li>
+                        <h3 class="item-title">{{ assignment.reviewer }}</h3>
+                        <p class="item-meta">Assignment status: {{ assignment.get_status_display }}</p>
+                        <p class="item-meta">
+                            Reviewer state:
+                            {% if assignment.is_active %}Active{% else %}Removed{% endif %}
                         </p>
-                    {% endif %}
 
-                    {% if assignment.reviews.all %}
-                        <ul class="item-list">
-                            {% for review in assignment.reviews.all %}
-                                <li>
-                                    <p class="item-meta">
-                                        <strong>For version:</strong>
-                                        {% if review.article_version %}
-                                            {{ review.article_version.version_number }}
-                                        {% else %}
-                                            old review (version not specified)
+                        {% if assignment.is_active %}
+                            <p>
+                                <a href="{% url 'remove_reviewer_from_book_article' book.id article.id assignment.id %}" class="btn btn-secondary">
+                                    Remove reviewer
+                                </a>
+                            </p>
+                        {% endif %}
+
+                        {% if assignment.reviews.all %}
+                            <ul class="item-list">
+                                {% for review in assignment.reviews.all %}
+                                    <li>
+                                        <p class="item-meta">
+                                            <strong>For version:</strong>
+                                            {% if review.article_version %}
+                                                {{ review.article_version.version_number }}
+                                            {% else %}
+                                                old review (version not specified)
+                                            {% endif %}
+                                        </p>
+                                        <p class="item-meta"><strong>Recommendation:</strong> {{ review.get_recommendation_display }}</p>
+                                        <div class="card-text">{{ review.comment|linebreaks }}</div>
+                                        {% if review.file %}
+                                            <p><a href="{{ review.file.url }}" class="btn btn-secondary">Download review file</a></p>
                                         {% endif %}
-                                    </p>
-                                    <p class="item-meta"><strong>Recommendation:</strong> {{ review.get_recommendation_display }}</p>
-                                    <div class="card-text">{{ review.comment|linebreaks }}</div>
-                                    {% if review.file %}
-                                        <p><a href="{{ review.file.url }}" class="btn btn-secondary">Download review file</a></p>
-                                    {% endif %}
-                                    <p class="item-meta">Submitted at: {{ review.created_at }}</p>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="empty-state">No reviews submitted yet.</p>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="empty-state">No reviewers assigned yet.</p>
-    {% endif %}
-</div>
+                                        <p class="item-meta">Submitted at: {{ review.created_at }}</p>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="empty-state">No reviews submitted yet.</p>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">No reviewers assigned yet.</p>
+        {% endif %}
+    </div>
 
-<h2 class="section-title">Assign Reviewer</h2>
-<div class="form-panel">
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Assign reviewer</button>
-    </form>
-</div>
+    <h2 class="section-title">Assign Reviewer</h2>
+    <div class="form-panel">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Assign reviewer</button>
+        </form>
+    </div>
+{% endif %}
+    
 {% endblock %}

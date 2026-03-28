@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Book Author Invitation{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Book Author Invitation</h1>
+<p class="page-intro">
+    You have been invited to submit an abstract to this book.
+</p>
+
+<div class="list-panel">
+    <p class="item-meta"><strong>Book:</strong> {{ book.title }}</p>
+    <p class="item-meta"><strong>Created by:</strong> {{ book.created_by }}</p>
+    <p class="item-meta"><strong>Submission deadline:</strong> {{ book.submission_deadline }}</p>
+
+    {% if book.description %}
+        <div class="card-text">{{ book.description }}</div>
+    {% endif %}
+</div>
+
+<div class="cards" style="margin-top: 24px;">
+    <article class="card">
+        <div class="badge badge-blue">Existing account</div>
+        <h2 class="card-title">Login</h2>
+        <p class="card-text">
+            Sign in and you will be added to the allowed authors for this book automatically.
+        </p>
+        <div class="card-actions">
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn">Login</a>
+        </div>
+    </article>
+
+    <article class="card">
+        <div class="badge badge-yellow">New account</div>
+        <h2 class="card-title">Register</h2>
+        <p class="card-text">
+            Create an account first, then return here and you will be added to the allowed authors list for this book.
+        </p>
+        <div class="card-actions">
+            <a href="{% url 'register' %}?next={{ request.path }}" class="btn btn-secondary">Register</a>
+        </div>
+    </article>
+</div>
+{% endblock %}

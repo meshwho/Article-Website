@@ -215,7 +215,18 @@ def book_article_detail(request, book_id, article_id):
         book=book
     )
 
-    if request.method == 'POST':
+    can_assign_reviewer = article.status in [
+        Article.STATUS_SUBMITTED,
+        Article.STATUS_UNDER_REVIEW,
+        Article.STATUS_REVISION_REQUIRED,
+        Article.STATUS_ACCEPTED,
+        Article.STATUS_REJECTED,
+    ]
+
+    if request.method == 'POST' and can_assign_reviewer:
+        if article.status != Article.STATUS_SUBMITTED and article.status != Article.STATUS_UNDER_REVIEW and article.status != Article.STATUS_REVISION_REQUIRED and article.status != Article.STATUS_ACCEPTED and article.status != Article.STATUS_REJECTED:
+            return redirect('book_article_detail', book_id=book.id, article_id=article.id)
+
         form = ReviewAssignmentForm(request.POST, article=article)
         if form.is_valid():
             reviewer = form.cleaned_data['reviewer']
@@ -275,8 +286,57 @@ def book_article_detail(request, book_id, article_id):
             'book': book,
             'article': article,
             'form': form,
+            'can_assign_reviewer': can_assign_reviewer,
         }
     )
+
+@login_required
+@role_required(['admin'])
+def approve_article_abstract(request, book_id, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id,
+        book_id=book_id,
+        status=Article.STATUS_ABSTRACT_SUBMITTED
+    )
+
+
+    if request.method == 'POST':
+        article.status = Article.STATUS_ABSTRACT_APPROVED
+        article.save(update_fields=['status'])
+
+        Notification.objects.create(
+            user=article.author,
+            title='Abstract approved',
+            message=f'Your abstract "{article.title}" has been approved. You can now upload the full article.',
+            link=reverse('article_detail', args=[article.id])
+        )
+
+    return redirect('book_article_detail', book_id=book_id, article_id=article_id)
+
+
+@login_required
+@role_required(['admin'])
+def reject_article_abstract(request, book_id, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id,
+        book_id=book_id,
+        status=Article.STATUS_ABSTRACT_SUBMITTED
+    )
+
+    if request.method == 'POST':
+        article.status = Article.STATUS_ABSTRACT_REJECTED
+        article.save(update_fields=['status'])
+
+        Notification.objects.create(
+            user=article.author,
+            title='Abstract rejected',
+            message=f'Your abstract "{article.title}" has been rejected.',
+            link=reverse('article_detail', args=[article.id])
+        )
+
+    return redirect('book_article_detail', book_id=book_id, article_id=article_id)
 
 @login_required
 @role_required(['admin'])

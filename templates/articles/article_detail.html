@@ -16,6 +16,10 @@
         <a href="{% url 'edit_article' article.id %}" class="btn btn-secondary">Edit article</a>
     {% endif %}
 
+    {% if can_upload_full_article %}
+        <a href="{% url 'upload_full_article' article.id %}" class="btn">Upload full article</a>
+    {% endif %}
+
     {% if can_upload_new_version %}
         <a href="{% url 'upload_new_version' article.id %}" class="btn">Upload new version</a>
     {% endif %}
@@ -131,22 +135,6 @@
         <p class="empty-state">No versions found.</p>
     {% endif %}
 </div>
-
-{% if can_manage_coauthors %}
-    {% with invite=article.coauthor_invites.first %}
-        {% if invite and invite.is_active %}
-            <h2 class="section-title">Active Co-author Invite</h2>
-            <div class="list-panel">
-                <p class="item-meta">
-                    Share this link with the будущий co-author:
-                </p>
-                <p class="card-text">
-                    {{ request.scheme }}://{{ request.get_host }}{% url 'accept_coauthor_invite' invite.token %}
-                </p>
-            </div>
-        {% endif %}
-    {% endwith %}
-{% endif %}
     
 <h2 class="section-title">Reviews</h2>
 <div class="list-panel">

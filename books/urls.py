@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     admin_books,
+    approve_article_abstract,
     book_article_detail,
     book_detail,
     create_book,
@@ -12,6 +13,7 @@ from .views import (
     manage_book_authors,
     create_book_author_invite,
     accept_book_author_invite,
+    reject_article_abstract,
 )
 urlpatterns = [
     path('dashboard/books/', admin_books, name='admin_books'),
@@ -20,6 +22,8 @@ urlpatterns = [
     path('dashboard/books/<int:book_id>/edit/', edit_book, name='edit_book'),
     path('dashboard/books/<int:book_id>/authors/', manage_book_authors, name='manage_book_authors'),
     path('dashboard/books/<int:book_id>/articles/<int:article_id>/', book_article_detail, name='book_article_detail'),
+    path('dashboard/books/<int:book_id>/articles/<int:article_id>/approve-abstract/', approve_article_abstract, name='approve_article_abstract'),
+    path('dashboard/books/<int:book_id>/articles/<int:article_id>/reject-abstract/', reject_article_abstract, name='reject_article_abstract'),
     path('dashboard/books/<int:book_id>/delete/', delete_book, name='delete_book'),
     path('dashboard/books/<int:book_id>/download/', download_book_articles, name='download_book_articles'),
     path('dashboard/books/<int:book_id>/articles/<int:article_id>/download/', download_article_latest_version, name='download_article_latest_version'),

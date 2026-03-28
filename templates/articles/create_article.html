@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Create Article{% endblock %}
+{% block title %}Submit Abstract{% endblock %}
 
 {% block content %}
-<h1 class="page-title">Create Article</h1>
+<h1 class="page-title">Submit Abstract</h1>
 <p class="page-intro">
-    Submit your article to the selected book.
+    Submit the title and abstract first. The full article can be uploaded after the abstract is approved by the book creator.
 </p>
-
+    
 <div class="form-panel">
     <p><strong>Book:</strong> {{ book.title }}</p>
     <p><strong>Description:</strong> {{ book.description }}</p>
@@ -19,7 +19,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Submit article</button>
+        <button type="submit">Submit abstract</button>
     </form>
 </div>
 {% endblock %}

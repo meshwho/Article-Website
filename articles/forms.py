@@ -9,7 +9,7 @@ from .models import Article, ArticleVersion
 class ArticleCreateForm(forms.ModelForm):
     class Meta:
         model = Article
-        fields = ['title', 'abstract', 'file']
+        fields = ['title', 'abstract']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -29,6 +29,11 @@ class ArticleEditForm(forms.ModelForm):
 
 
 class ArticleVersionForm(forms.ModelForm):
+    class Meta:
+        model = ArticleVersion
+        fields = ['file', 'comment']
+
+class FullArticleUploadForm(forms.ModelForm):
     class Meta:
         model = ArticleVersion
         fields = ['file', 'comment']
