@@ -92,6 +92,7 @@
     {% endif %}
 </div>
 
+{% if can_assign_reviewer %}
 <h2 class="section-title">Assign Reviewer</h2>
 <div class="form-panel">
     <form method="post">
@@ -100,4 +101,5 @@
         <button type="submit">Assign reviewer</button>
     </form>
 </div>
+{% endif %}
 {% endblock %}

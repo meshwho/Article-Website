@@ -196,7 +196,15 @@ def admin_article_detail(request, article_id):
         id=article_id
     )
 
-    if request.method == 'POST':
+    can_assign_reviewer = article.status in [
+        Article.STATUS_SUBMITTED,
+        Article.STATUS_UNDER_REVIEW,
+        Article.STATUS_REVISION_REQUIRED,
+        Article.STATUS_ACCEPTED,
+        Article.STATUS_REJECTED,
+    ]
+
+    if request.method == 'POST' and can_assign_reviewer:
         form = ReviewAssignmentForm(request.POST, article=article)
         if form.is_valid():
             reviewer = form.cleaned_data['reviewer']
@@ -253,6 +261,7 @@ def admin_article_detail(request, article_id):
         request,
         'reviews/admin_article_detail.html',
         {
+            'can_assign_reviewer': can_assign_reviewer,
             'unread_count': unread_count,
             'article': article,
             'form': form,

@@ -96,7 +96,7 @@
 
 <script>
 function copyBookAuthorInviteLink() {
-    const linkText = document.getElementById('bookAuthorInviteLink').innerText.trim();
+    const linkText = document.getElementById('bookAuthorInviteLink').textContent.trim();
     const status = document.getElementById('bookAuthorInviteStatus');
 
     navigator.clipboard.writeText(linkText).then(function () {

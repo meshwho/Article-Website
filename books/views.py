@@ -224,8 +224,7 @@ def book_article_detail(request, book_id, article_id):
     ]
 
     if request.method == 'POST' and can_assign_reviewer:
-        if article.status != Article.STATUS_SUBMITTED and article.status != Article.STATUS_UNDER_REVIEW and article.status != Article.STATUS_REVISION_REQUIRED and article.status != Article.STATUS_ACCEPTED and article.status != Article.STATUS_REJECTED:
-            return redirect('book_article_detail', book_id=book.id, article_id=article.id)
+
 
         form = ReviewAssignmentForm(request.POST, article=article)
         if form.is_valid():

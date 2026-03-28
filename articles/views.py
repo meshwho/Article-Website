@@ -140,8 +140,8 @@ def create_article(request, book_id):
             for admin in admins:
                 Notification.objects.create(
                     user=admin,
-                    title='New article submitted',
-                    message=f'A new article "{article.title}" was submitted by {article.author}.',
+                    title='New abstract submitted',
+                    message=f'A new abstract "{article.title}" was submitted by {article.author}.',
                     link=reverse('book_article_detail', args=[article.book.id, article.id])
                 )
 
