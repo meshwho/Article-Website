@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from users.decorators import role_required
-from .forms import BookAuthorsForm, BookForm
+from .forms import AbstractRevisionRequestForm, BookAuthorsForm, BookForm
 from .models import Book, BookAuthorInvite
 from articles.models import Article
 
@@ -209,11 +209,17 @@ def book_article_detail(request, book_id, article_id):
         Article.objects.select_related('author', 'book').prefetch_related(
             'review_assignments__reviewer',
             'review_assignments__reviews',
-            'versions'
+            'versions',
+            'coauthors',
         ),
         id=article_id,
         book=book
     )
+
+    can_decide_abstract = article.status in [
+        Article.STATUS_ABSTRACT_SUBMITTED,
+        Article.STATUS_ABSTRACT_RESUBMITTED,
+    ]
 
     can_assign_reviewer = article.status in [
         Article.STATUS_SUBMITTED,
@@ -224,8 +230,6 @@ def book_article_detail(request, book_id, article_id):
     ]
 
     if request.method == 'POST' and can_assign_reviewer:
-
-
         form = ReviewAssignmentForm(request.POST, article=article)
         if form.is_valid():
             reviewer = form.cleaned_data['reviewer']
@@ -252,7 +256,7 @@ def book_article_detail(request, book_id, article_id):
 
                     if article.status == Article.STATUS_SUBMITTED:
                         article.status = Article.STATUS_UNDER_REVIEW
-                        article.save()
+                        article.save(update_fields=['status'])
 
                     messages.success(request, 'Reviewer assigned successfully.')
                     return redirect('book_article_detail', book_id=book.id, article_id=article.id)
@@ -271,12 +275,14 @@ def book_article_detail(request, book_id, article_id):
 
                 if article.status == Article.STATUS_SUBMITTED:
                     article.status = Article.STATUS_UNDER_REVIEW
-                    article.save()
+                    article.save(update_fields=['status'])
 
                 messages.success(request, 'Reviewer assigned successfully.')
                 return redirect('book_article_detail', book_id=book.id, article_id=article.id)
     else:
         form = ReviewAssignmentForm(article=article)
+
+    abstract_revision_form = AbstractRevisionRequestForm()
 
     return render(
         request,
@@ -286,6 +292,9 @@ def book_article_detail(request, book_id, article_id):
             'article': article,
             'form': form,
             'can_assign_reviewer': can_assign_reviewer,
+            'can_decide_abstract': can_decide_abstract,
+            'abstract_revision_form': abstract_revision_form,
+            'has_coauthors': article.coauthors.exists(),
         }
     )
 
@@ -296,13 +305,16 @@ def approve_article_abstract(request, book_id, article_id):
         Article,
         id=article_id,
         book_id=book_id,
-        status=Article.STATUS_ABSTRACT_SUBMITTED
+        status__in=[
+            Article.STATUS_ABSTRACT_SUBMITTED,
+            Article.STATUS_ABSTRACT_RESUBMITTED,
+        ]
     )
-
 
     if request.method == 'POST':
         article.status = Article.STATUS_ABSTRACT_APPROVED
-        article.save(update_fields=['status'])
+        article.abstract_admin_comment = ''
+        article.save(update_fields=['status', 'abstract_admin_comment'])
 
         Notification.objects.create(
             user=article.author,
@@ -313,7 +325,6 @@ def approve_article_abstract(request, book_id, article_id):
 
     return redirect('book_article_detail', book_id=book_id, article_id=article_id)
 
-
 @login_required
 @role_required(['admin'])
 def reject_article_abstract(request, book_id, article_id):
@@ -321,7 +332,10 @@ def reject_article_abstract(request, book_id, article_id):
         Article,
         id=article_id,
         book_id=book_id,
-        status=Article.STATUS_ABSTRACT_SUBMITTED
+        status__in=[
+            Article.STATUS_ABSTRACT_SUBMITTED,
+            Article.STATUS_ABSTRACT_RESUBMITTED,
+        ]
     )
 
     if request.method == 'POST':
@@ -336,6 +350,36 @@ def reject_article_abstract(request, book_id, article_id):
         )
 
     return redirect('book_article_detail', book_id=book_id, article_id=article_id)
+
+@login_required
+@role_required(['admin'])
+def request_article_abstract_revision(request, book_id, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id,
+        book_id=book_id,
+        status__in=[
+            Article.STATUS_ABSTRACT_SUBMITTED,
+            Article.STATUS_ABSTRACT_RESUBMITTED,
+        ]
+    )
+
+    if request.method == 'POST':
+        form = AbstractRevisionRequestForm(request.POST)
+        if form.is_valid():
+            article.status = Article.STATUS_ABSTRACT_REVISION_REQUESTED
+            article.abstract_admin_comment = form.cleaned_data['comment']
+            article.save(update_fields=['status', 'abstract_admin_comment'])
+
+            Notification.objects.create(
+                user=article.author,
+                title='Abstract revision requested',
+                message=f'Revision has been requested for your abstract "{article.title}".',
+                link=reverse('article_detail', args=[article.id])
+            )
+
+    return redirect('book_article_detail', book_id=book_id, article_id=article_id)
+
 
 @login_required
 @role_required(['admin'])
@@ -480,6 +524,8 @@ def accept_book_author_invite(request, token):
         )
 
     book.allowed_authors.add(request.user)
+    invite.is_active = False
+    invite.save(update_fields=['is_active'])
 
     messages.success(request, 'You have been added to the allowed authors list for this book.')
     return redirect('choose_book')

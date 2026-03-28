@@ -181,16 +181,19 @@ def article_detail(request, article_id):
     can_upload_full_article = False
     can_edit_article = False
     can_manage_coauthors = False
+    can_resubmit_abstract = False
 
     if article.author_id == request.user.id:
-        can_edit_article = True
-        can_manage_coauthors = True
+        if article.status == Article.STATUS_ABSTRACT_REVISION_REQUESTED:
+            can_edit_article = True
+            can_manage_coauthors = True
+            can_resubmit_abstract = True
 
         if article.status == Article.STATUS_ABSTRACT_APPROVED and not article.file:
             can_upload_full_article = True
 
         latest_version = article.versions.first()
-        if latest_version:
+        if article.status == Article.STATUS_REVISION_REQUIRED and latest_version:
             can_upload_new_version = Review.objects.filter(
                 assignment__article=article,
                 article_version=latest_version
@@ -209,6 +212,7 @@ def article_detail(request, article_id):
             'can_edit_article': can_edit_article,
             'can_manage_coauthors': can_manage_coauthors,
             'active_invite': active_invite,
+            'can_resubmit_abstract': can_resubmit_abstract,
         }
     )
 
@@ -220,7 +224,8 @@ def edit_article(request, article_id):
     article = get_object_or_404(
         Article,
         id=article_id,
-        author=request.user
+        author=request.user,
+        status=Article.STATUS_ABSTRACT_REVISION_REQUESTED
     )
 
     if request.method == 'POST':
@@ -250,7 +255,8 @@ def upload_new_version(request, article_id):
     article = get_object_or_404(
         Article.objects.prefetch_related('versions', 'review_assignments__reviews'),
         id=article_id,
-        author=request.user
+        author=request.user,
+        status=Article.STATUS_REVISION_REQUIRED
     )
 
     latest_version = article.versions.first()
@@ -368,6 +374,30 @@ def remove_coauthor(request, article_id, user_id):
 
     return redirect('article_detail', article_id=article.id)
 
+@login_required
+@role_required(['author'])
+def resubmit_abstract(request, article_id):
+    article = get_object_or_404(
+        Article,
+        id=article_id,
+        author=request.user,
+        status=Article.STATUS_ABSTRACT_REVISION_REQUESTED
+    )
+
+    if request.method == 'POST':
+        article.status = Article.STATUS_ABSTRACT_RESUBMITTED
+        article.save(update_fields=['status'])
+
+        admins = CustomUser.objects.filter(role='admin')
+        for admin in admins:
+            Notification.objects.create(
+                user=admin,
+                title='Abstract resubmitted',
+                message=f'The abstract "{article.title}" has been resubmitted by {article.author}.',
+                link=reverse('book_article_detail', args=[article.book.id, article.id])
+            )
+
+    return redirect('article_detail', article_id=article.id)
 
 @login_required
 @role_required(['author'])

@@ -50,7 +50,7 @@
         <p><a href="{{ article.file.url }}" class="btn btn-secondary">Download article file</a></p>
     {% endif %}
 </div>
-
+{% if can_assign_reviewer %}
 <h2 class="section-title">Assigned Reviewers</h2>
 <div class="list-panel">
     {% if article.review_assignments.all %}
@@ -92,7 +92,7 @@
     {% endif %}
 </div>
 
-{% if can_assign_reviewer %}
+
 <h2 class="section-title">Assign Reviewer</h2>
 <div class="form-panel">
     <form method="post">

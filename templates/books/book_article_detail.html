@@ -24,7 +24,7 @@
     </div>
 </div>
     
-{% if article.status == 'abstract_submitted' %}
+{% if can_decide_abstract %}
     <div class="card-actions" style="margin-bottom: 20px;">
         <form method="post" action="{% url 'approve_article_abstract' book.id article.id %}" class="inline-form">
             {% csrf_token %}
@@ -34,6 +34,15 @@
         <form method="post" action="{% url 'reject_article_abstract' book.id article.id %}" class="inline-form">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Reject abstract</button>
+        </form>
+    </div>
+
+    <div class="form-panel" style="margin-bottom: 20px;">
+        <h2 class="section-title">Request abstract revision</h2>
+        <form method="post" action="{% url 'request_article_abstract_revision' book.id article.id %}">
+            {% csrf_token %}
+            {{ abstract_revision_form.as_p }}
+            <button type="submit" class="btn btn-secondary">Request revision</button>
         </form>
     </div>
 {% endif %}
@@ -70,10 +79,17 @@
         {% endfor %}
     </ul>
 
-    {% if not article.coauthors.exists %}
+    {% if not has_coauthors %}
         <p class="empty-state">No co-authors yet.</p>
     {% endif %}
 </div>
+
+{% if article.abstract_admin_comment %}
+    <div class="list-panel">
+        <h2 class="section-title">Administrator Comment</h2>
+        <div class="card-text">{{ article.abstract_admin_comment|linebreaks }}</div>
+    </div>
+{% endif %}
     
 <h2 class="section-title">Article Version History</h2>
 <div class="list-panel">

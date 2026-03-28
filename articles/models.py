@@ -8,6 +8,8 @@ import uuid
 class Article(models.Model):
     STATUS_DRAFT = 'draft'
     STATUS_ABSTRACT_SUBMITTED = 'abstract_submitted'
+    STATUS_ABSTRACT_REVISION_REQUESTED = 'abstract_revision_requested'
+    STATUS_ABSTRACT_RESUBMITTED = 'abstract_resubmitted'
     STATUS_ABSTRACT_APPROVED = 'abstract_approved'
     STATUS_ABSTRACT_REJECTED = 'abstract_rejected'
     STATUS_SUBMITTED = 'submitted'
@@ -19,6 +21,8 @@ class Article(models.Model):
     STATUS_CHOICES = [
         (STATUS_DRAFT, 'Draft'),
         (STATUS_ABSTRACT_SUBMITTED, 'Abstract submitted'),
+        (STATUS_ABSTRACT_REVISION_REQUESTED, 'Abstract revision requested'),
+        (STATUS_ABSTRACT_RESUBMITTED, 'Abstract resubmitted'),
         (STATUS_ABSTRACT_APPROVED, 'Abstract approved'),
         (STATUS_ABSTRACT_REJECTED, 'Abstract rejected'),
         (STATUS_SUBMITTED, 'Full article submitted'),
@@ -71,6 +75,12 @@ class Article(models.Model):
         choices=STATUS_CHOICES,
         default=STATUS_DRAFT,
         verbose_name='Status'
+    )
+
+    abstract_admin_comment = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Abstract admin comment'
     )
 
     created_at = models.DateTimeField(

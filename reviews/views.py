@@ -191,7 +191,8 @@ def admin_article_detail(request, article_id):
     article = get_object_or_404(
         Article.objects.select_related('author', 'book').prefetch_related(
             'review_assignments__reviews',
-            'versions'
+            'versions',
+            'coauthors',
         ),
         id=article_id
     )
@@ -231,7 +232,7 @@ def admin_article_detail(request, article_id):
 
                     if article.status == Article.STATUS_SUBMITTED:
                         article.status = Article.STATUS_UNDER_REVIEW
-                        article.save()
+                        article.save(update_fields=['status'])
 
                     messages.success(request, 'Reviewer assigned successfully.')
                     return redirect('admin_article_detail', article_id=article.id)
@@ -250,7 +251,7 @@ def admin_article_detail(request, article_id):
 
                 if article.status == Article.STATUS_SUBMITTED:
                     article.status = Article.STATUS_UNDER_REVIEW
-                    article.save()
+                    article.save(update_fields=['status'])
 
                 messages.success(request, 'Reviewer assigned successfully.')
                 return redirect('admin_article_detail', article_id=article.id)
@@ -261,10 +262,10 @@ def admin_article_detail(request, article_id):
         request,
         'reviews/admin_article_detail.html',
         {
-            'can_assign_reviewer': can_assign_reviewer,
             'unread_count': unread_count,
             'article': article,
             'form': form,
+            'can_assign_reviewer': can_assign_reviewer,
         }
     )
 

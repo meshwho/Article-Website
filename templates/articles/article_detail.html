@@ -16,6 +16,15 @@
         <a href="{% url 'edit_article' article.id %}" class="btn btn-secondary">Edit article</a>
     {% endif %}
 
+    {% if can_resubmit_abstract %}
+        <form method="post"
+              action="{% url 'resubmit_abstract' article.id %}"
+              class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn">Resubmit abstract</button>
+        </form>
+    {% endif %}
+
     {% if can_upload_full_article %}
         <a href="{% url 'upload_full_article' article.id %}" class="btn">Upload full article</a>
     {% endif %}
@@ -40,6 +49,13 @@
     </div>
 </div>
 
+{% if article.abstract_admin_comment %}
+    <div class="list-panel">
+        <h2 class="section-title">Administrator Comment</h2>
+        <div class="card-text">{{ article.abstract_admin_comment|linebreaks }}</div>
+    </div>
+{% endif %}
+    
 <div class="list-panel">
     <h2 class="section-title">Article Information</h2>
     <p class="item-meta"><strong>Created:</strong> {{ article.created_at }}</p>

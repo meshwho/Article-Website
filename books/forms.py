@@ -31,3 +31,11 @@ class BookAuthorsForm(forms.ModelForm):
         self.fields['allowed_authors'].label_from_instance = (
             lambda user: f'{user.first_name} {user.last_name}'.strip() or user.username
         )
+
+
+class AbstractRevisionRequestForm(forms.Form):
+    comment = forms.CharField(
+        label='Revision comment',
+        widget=forms.Textarea(attrs={'rows': 5}),
+        required=True
+    )
